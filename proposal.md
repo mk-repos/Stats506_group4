@@ -13,9 +13,9 @@ Choropleth Map, GIS, shapefile, Interactive Report
 
 ## Summary
 
-A choropleth map is a very useful tool in visualizing the differences between regions. Using daily count data from Covid-19 obtained from the [COVID Tracking Project](https://covidtracking.com/), we visualize the total number of new infections in the U.S. for each quarter in 2020 at the state level.
+A choropleth map is a very useful tool in visualizing the differences between regions. Using daily count data from Covid-19 obtained from the [COVID Tracking Project](https://covidtracking.com/), we visualize the total number of new infections in the U.S. at the state level.
 
-Furthermore, we show that choropleth maps are also powerful for visualizing spatio-temporal data that evolve with time. We create examples of an interactive map for the same dataset where users can change the aggregation period. Users can see which areas were hotspots of infection at which point in time.
+Furthermore, we show that choropleth maps are powerful for visualizing spatio-temporal data that evolve with time. We create examples of an interactive map for the same dataset where users can change the aggregation period. Users can see which areas were hotspots of infection at which point in time.
 
 Although we only use the U.S. data in this tutorial, we adopt a universal method using  `shapefile` instead of using a special package made exclusively for the U.S. (such as `usmap` package in R) to ensure a consistent presentation across software tools and to allow users to apply our tutorial for visualizations in different resolutions (international, state, county, zip code, etc.) and in different situations.
 
