@@ -76,7 +76,7 @@ ggarrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
 
 State coordinates are recorded as *multipolygons* due to the presence of some disjoints.
 
-The only difference from previous examples is that the Cartesian coordinate system has now been changed to a geographic coordinate system consisting of latitude and longitude. With the International Date Line as an edge, the x-axis has a range of -180 to 180 degrees from west to east, and the y-axis has a range of -90 to 90 degrees from south to north. This structure may be very intuitive.
+The only difference from previous examples is that the Cartesian coordinate system has now been changed to a geographic coordinate system consisting of latitude and longitude. With the International Date Line as an edge, the x-axis has a range of -180 to 180 degrees from west to east, and the y-axis has a range of -90 to 90 degrees from south to north. This system may be very intuitive.
 
 ```{r draw_michigan_map, echo=FALSE, fig.height=5}
 filename = "./maps/cb_2018_us_state_500k.shp"
@@ -91,16 +91,16 @@ sf_us %>%
 
 ## Understanding Geographic Coodinate System
 
-There are not many things you have to worry about when drawing a map, but it should be noted that geographic coordinate systems are actually quite complex. It is difficult to describe the position on the Earth's surface because the Earth is not exactly spherical and cannot be transformed into Cartesian coordinates without some distortion.
+There are not many things you have to worry about when drawing a map, but it should be noted that geographic coordinate systems are actually quite complex. It is difficult to describe the position on the Earth's surface because the Earth is not exactly spherical. Also, the coordinates defined by angles (i.e., longitude and latitude) cannot be transformed into Cartesian coordinates without some distortion.
 
 There are several different ***Coordinate Reference Systems (CRSs)*** available in the world. They approximate the Earth's surface somehow and define the relationship between the geographic objects and the surface of the Earth. Since you cannot join multiple `shapefile` that are based on different CRSs, you should check what CRS your shapefile is based on and transform them if needed.
 
-***Geographic CRSs*** approximate the Earth's surface by an ellipsoid shape and identify a location on the surface by using longitude and latitude. The most common *Geographic CRSs* include:
+***Geographic CRSs*** approximate the Earth's surface by an ellipsoid shape and identify a location on the surface by using two angles, longitude and latitude. The most common *Geographic CRSs* include:
 
  - *The North American Datum of 1983 (NAD 83)* is commonly used by U.S. federal agencies and is optimized for accuracy in the United States, Canada, Mexico, and Central America.
  - *World Geodetic System of 1984 (WGS 84)* is commonly used by international organizations and uses the Earth's center of gravity as a reference point. It is not optimized for any local region.
 
-***Projected CRSs*** refer to the coordinate systems used for 2-dimensional projection. When drawing a map, locations on the Earth's surface must be projected onto a flat paper, display, etc., which may result in some distortion. In practice, we need to project a point defined by *Geographic CRSs* onto 2-dimensional x (east-west) axis and y (north-south) axis. There are many different projection methods available, and each has both strengths and weaknesses. You should carefully choose one for its intended purpose. The most common *Projected CRSs* include:
+***Projected CRSs*** refer to the coordinate systems used for 2-dimensional projection. When drawing a map, locations on the Earth's surface must be projected onto a flat paper, display, etc., which may result in some distortion. In practice, we need to project a point defined in *Geographic CRSs* onto 2-dimensional x (east-west) axis and y (north-south) axis. There are many different projection methods available, and each has both strengths and weaknesses. You should carefully choose one for its intended purpose. The most common *Projected CRSs* include:
 
  - *Mercator* draws a familiar rectangular map and can preserve local directions and shapes. However, it distorts distance and inflates the sizes of countries away from the equator.
  - *Albers Equal Area* preserve accurate area measurement but distorts linear scale and shapes.
