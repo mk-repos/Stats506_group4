@@ -1043,7 +1043,7 @@ library(scales) # determine breaks and labels for graphics</code></pre>
     # Adjust legend
     legend.title = element_blank(),
     legend.text = element_text(size = 8) ) +
-    # Apply diverging color scheme (blue &lt; red)
+    # Apply color scheme (red)
     scale_fill_distiller(palette = &quot;Reds&quot;,
                          direction = +1, # more cases = darker color
                          limits = c(0, max_lim),
