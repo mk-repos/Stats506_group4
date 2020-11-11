@@ -1,6 +1,6 @@
 ---
-title: "Stats 506, F20, Group Project"
-author: "Your Name, email@umich.edu"
+title: "Stats 506, F20, Group Project, Group 4 <br> Generate Choropleth Maps of Covid-19 Cases in the United States"
+author: "Moeki Kurita, Enhao Li, Dongyang Zhao"
 date: "`r format.Date(Sys.Date(), '%B %d, %Y')`"
 output:
   html_document:
@@ -14,22 +14,44 @@ knitr::opts_chunk$set(echo = TRUE) # show all code chunks
 library(kableExtra)
 ```
 
+# Introduction
+
+A choropleth map is a very useful tool in visualizing the differences between regions. Using daily count data from Covid-19 obtained from the [COVID Tracking Project](https://covidtracking.com/), we visualize the total number of new infections in the U.S. at the state level.
+
+Furthermore, we show that choropleth maps are powerful for visualizing spatio-temporal data that evolve with time. We create examples of an interactive map for the same dataset where users can change the aggregation period. Users can see which areas were hotspots of infection at which point in time.
+
+Although we only use the U.S. data in this tutorial, we adopt a universal method using *shapefile* instead of using a special package made exclusively for the U.S. (such as `usmap` package in R) to ensure a consistent presentation across software tools and to allow users to apply our tutorial for visualizations in different resolutions (international, state, county, zip code, etc.) and in different situations.
+
+We first explain geographic vector data and shapefiles in general, and then we perform the analytical examples in R, Python and SAS software. The interactive map will be implemented in R and Python only.
+
 # Brief Introduction to Geographic Vector Data
 
-*will insert brief explanation of `shapefile`.*
+*Note: This section will use some codes to show plots and vectors, but will not be repeated in multiple languages, because these are just for explanation and not directly related to our examples.*
 
-*This section will use some codes to show plots and vectors, but will not be repeated in Python or SAS,  because these are just for explanation and not directly related to our examples.*
+*shapefile* is a kind of GIS (Geographic Information System) format that can store the location, shape, and attribute information of geographical objects such as national and state borders, buildings, streets, etc.
+
+It was originally developed by ESRI, a U.S. GIS-related company, but its specifications are publicly available and widely used by governmental and non-governmental organizations around the world. For example, the U.S. Census Bureau [provides shapefiles of the U.S.](https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html) at different levels, such as national, state, county, congressional district, and zip code. National and regional government agencies around the world also provide shapefiles, and there is a website ([Natural Earth](https://www.naturalearthdata.com/)) that provides public domain world map data. Individuals can easily and accurately draw a map of any part of the world for free.
+
+shapefile is not a single file, but is composed of multiple files, all of which must be used together. It consists of at least the following three files.
+
+ - `.shp` stores coordinates of the geometric shapes
+ - `.dbf` stores attribute information of the shapes (name, area, and other variables such as population)
+ - `.shx` indexes and connects the shapes in `.shp` and the attributes in `.dbf`
+
+To simplify the explanation, you can think of it as a table in R, Python, STATA, SAS, etc., with additional columns storing vector data shaped like geographical objects.
 
 ## Understanding Polygons
 
-*will insert explanation of polygons*
+When you load a shapefile, it may look like a typical table you see in .csv, but it should contain a column called `geometry` which stores vector data consisting of points, lines and polygons.
 
-```{r package_loader_intro, echo=FALSE, message=FALSE}
-# this chunk will be repeated in the example part
+In contrast, there is another format called raster data. Rasters are composed of cells arranged on a grid, and can also represent topographical information such as elevation. We won't cover it in this tutorial.
+
+Most of the objects on the map can be represented by a combination of points, lines and polygons. Points are used for bus stops etc., lines are used for streets etc., and polygons are used for buildings, borders, etc. Administrative districts are often represented by a combination of disjoint polygons (*multi polygons*), as they often include remote islands and/or isolated regions.
+
+The following figure shows vector data of points, lines and polygons in a Cartesian coordinate system.
+
+```{r demonstrate_sf_points, message=FALSE, echo=FALSE, fig.height=5}
 library(tidyverse); library(ggplot2); library(ggpubr); library(sf)
-```
-
-```{r demonstrate_sf_points, echo=FALSE, fig.height=5}
 # set coordinates to draw
 area_51 = c(37.234332396, -115.80666344)
 random_point = st_point(c(37.6, -115.4)) 
@@ -72,11 +94,7 @@ p4 = ggplot() +
 ggarrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
 ```
 
-*will insert an explanation of how a map is simply a combination of multi-polygons*
-
-State coordinates are recorded as *multipolygons* due to the presence of some disjoints.
-
-The only difference from previous examples is that the Cartesian coordinate system has now been changed to a geographic coordinate system consisting of latitude and longitude. With the International Date Line as an edge, the x-axis has a range of -180 to 180 degrees from west to east, and the y-axis has a range of -90 to 90 degrees from south to north. This system may be very intuitive.
+Next, using Michigan as an example, we display Michigan's vector data on the Cartesian coordinate system.
 
 ```{r draw_michigan_map, echo=FALSE, fig.height=5}
 filename = "./maps/cb_2018_us_state_500k.shp"
@@ -89,11 +107,19 @@ sf_us %>%
   ggtitle("Michigan")
 ```
 
+The only difference from previous figures is that the x-axis and y-axis have now been changed to a geographic coordinate system consisting of latitude and longitude. With the International Date Line as an edge, the x-axis has a range of -180 to 180 degrees from west to east, and the y-axis has a range of -90 to 90 degrees from south to north. This system sounds very intuitive.
+
+However, without some transformation, latitude and longitude cannot be displayed in a Cartesian coordinate system on a flat surface. The next section explains how to deal with geographic coordinates and project them onto a flat surface.
+
 ## Understanding Geographic Coodinate System
 
-There are not many things you have to worry about when drawing a map, but it should be noted that geographic coordinate systems are actually quite complex. It is difficult to describe the position on the Earth's surface because the Earth is not exactly spherical. Also, the coordinates defined by angles (i.e., longitude and latitude) cannot be transformed into Cartesian coordinates without some distortion.
+There are not many things you have to worry about when drawing a map because in many cases, the software will take care of it. However it should be noted that geographic coordinate systems are actually quite complex.
 
-There are several different ***Coordinate Reference Systems (CRSs)*** available in the world. They approximate the Earth's surface somehow and define the relationship between the geographic objects and the surface of the Earth. Since you cannot join multiple `shapefile` that are based on different CRSs, you should check what CRS your shapefile is based on and transform them if needed.
+Since the Earth is not exactly round, the values of latitude and longitude vary slightly depending on how you approximate the Earth's surface and what point on the Earth you use as a reference point. Thus, there are several different ***Coordinate Reference Systems (CRSs)*** available in the world. They approximate the Earth's surface somehow and define the relationship between the geographic objects and the surface of the Earth. Since you cannot join multiple `shapefile` that are based on different CRSs, you should check what CRS your shapefile is based on and transform them if needed.
+
+In addition to the problem of defining coordinates, there is another problem of how to represent an object on the surface of a sphere on a flat plane. The coordinates defined by angles (i.e., longitude and latitude) cannot be transformed into Cartesian coordinates without some distortion.
+
+The first problem is addressed by ***Geographic CRSs*** and the second by ***Projected CRSs***.
 
 ***Geographic CRSs*** approximate the Earth's surface by an ellipsoid shape and identify a location on the surface by using two angles, longitude and latitude. The most common *Geographic CRSs* include:
 
@@ -386,7 +412,7 @@ library(scales) # determine breaks and labels for graphics
 
 ### R {.tabset}
 
-`will insert an explanation of the following function`
+*will insert an explanation of the following function*
 
 ```{r choropleth_func_R}
 draw_map_quarter = function(sf_obj, target_q, max_lim) {
@@ -410,9 +436,11 @@ draw_map_quarter = function(sf_obj, target_q, max_lim) {
     legend.text = element_text(size = 8) ) +
     # Apply color scheme (red)
     scale_fill_distiller(palette = "Reds",
-                         direction = +1, # more cases = darker color
+                         # Let more cases = darker color
+                         direction = +1,
                          limits = c(0, max_lim),
-                         labels = comma) + # force all digits to be displayed
+                         # force all digits to be displayed as comma separated
+                         labels = comma_format()) +
     # Adjust size of the color bar in the legend
     guides(fill = guide_colourbar(barwidth = 0.5, barheight = 10)) +
     labs(fill = "Counts")
@@ -454,14 +482,15 @@ draw_map_quarter(sf_merged, "2020.4", max_positive) +
 
 # Extended Example: Interactive Choropleth Maps
 
+As an extended example, we generate an interactive map that allows users to choose which month to view.
+
 ## Software Requirements {.tabset}
 
 ### R
 
 ```{r interactive_packages_R, message=FALSE}
 # Same as the previous sections
-library(sf); library(tidyverse); library(ggplot2)
-library(lubridate); library(scales)
+library(sf); library(tidyverse); library(ggplot2); library(scales)
 # New in this section
 library(plotly) # Draw interactive maps with `ggplot2`
 ```
@@ -470,17 +499,7 @@ library(plotly) # Draw interactive maps with `ggplot2`
 
 ### R
 
-```{r interactive_data_R, message=FALSE}
-# Download up-to-date .csv
-df_covid = read_csv(
-  url("https://covidtracking.com/data/download/all-states-history.csv")
-  )
-
-# Select variables and delete territories
-df_covid = df_covid %>% 
-  select(date, state, positiveIncrease) %>% 
-  filter( !(state %in% c("AS", "GU", "MP", "PR", "VI")) )
-```
+Using the same data set used for the quarterly aggregation, we now aggregate this on a monthly basis.
 
 ```{r aggregate_state_month, message=FALSE}
 # Aggregate by State and Month
@@ -499,8 +518,9 @@ df_state_m = df_state_m %>%
 # Merge with sf object
 sf_merged_month = df_state_m %>% 
   left_join(sf_us_shifted, by = c("state" = "STUSPS"))
-sf_merged_month
 ```
+
+We prepared a data frame in which there is one line per month for each state.
 
 ```{r show_merged_sf_month}
 sf_merged_month %>% 
@@ -511,15 +531,22 @@ sf_merged_month %>%
   kable_paper("hover", full_width = TRUE)
 ```
 
-```{r plotly_R, cache=TRUE}
+*will insert an explanation about `ggplotly`. `frame` option can be used for an animated slider.*
+
+When users mouse over a state, the number of new infections for that state in that month is shown in a hover view.
+
+January and February 2020 are not shown on this interactive map because data are not available for almost all states.
+
+```{r plotly_R, warning=FALSE, cache=TRUE}
+# First create a ggplot object just like before
 p = sf_merged_month %>%
   filter(month != "2020-02" & month != "2020-01") %>%
   ggplot(aes(frame = month)) +
   geom_sf(color = NA,
           mapping = aes(fill = total_pos,
                         geometry = geometry,
-                        text = paste("Positives in ", NAME, "\n",
-                                     comma(total_pos)))) +
+                        text = paste("Positives in", NAME, "\n",
+                                     comma(total_pos, accuracy = 1)))) +
   coord_sf(crs = "+proj=merc") +
   theme(
   # Remove background
@@ -536,8 +563,10 @@ p = sf_merged_month %>%
   # Apply color scheme (red)
   scale_fill_distiller(palette = "Reds",
                        direction = +1,
-                       labels = comma) + 
+                       labels = comma_format()) + 
   labs(fill = "Counts")
+
+# Add a slider to change a month to display
 fig = ggplotly(p, tooltip = c("text")) %>% 
   animation_opts(transition = 0, redraw = TRUE)
 fig
