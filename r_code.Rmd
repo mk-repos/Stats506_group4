@@ -345,18 +345,20 @@ max_positive = max(df_state_q$total_pos)
 # Pivot to wide
 df_state_q = df_state_q %>% 
   pivot_wider(id_cols = state, names_from = q, values_from = total_pos)
-
-#Show resulting data
-df_state_q %>% 
-  head(5) %>% 
-  kable(format = 'html', escape = FALSE, align = 'c') %>%
-  kable_paper("hover", full_width = TRUE)
 ```
 
 ```{r merge_map_and_data}
 # Merge with sf object
 sf_merged = sf_us_shifted %>% 
   left_join(df_state_q, by = c("STUSPS" = "state"))
+```
+
+```{r show_merged_sf}
+sf_merged %>% 
+  select(5,6,10,11,12,13,14) %>% # only show related columns
+  head(5) %>% 
+  kable(format = 'html', escape = FALSE, align = 'c') %>%
+  kable_paper("hover", full_width = TRUE)
 ```
 
 ### Python
@@ -371,7 +373,7 @@ sf_merged = sf_us_shifted %>%
 
 ```{r graphics_packages_R, message=FALSE}
 # Same as the previous sections
-library(tidyverse); library(ggplot2)
+library(sf); library(tidyverse); library(ggplot2)
 # New in this section
 library(scales) # determine breaks and labels for graphics
 ```
@@ -405,7 +407,6 @@ draw_map_quarter = function(sf_obj, target_q, max_lim) {
     axis.text = element_blank(),
     axis.ticks = element_blank(),
     # Adjust legend
-    legend.title = element_blank(),
     legend.text = element_text(size = 8) ) +
     # Apply color scheme (red)
     scale_fill_distiller(palette = "Reds",
@@ -413,7 +414,8 @@ draw_map_quarter = function(sf_obj, target_q, max_lim) {
                          limits = c(0, max_lim),
                          labels = comma) + # force all digits to be displayed
     # Adjust size of the color bar in the legend
-    guides(fill = guide_colourbar(barwidth = 0.5, barheight = 10))
+    guides(fill = guide_colourbar(barwidth = 0.5, barheight = 10)) +
+    labs(fill = "Counts")
 }
 ```
 
@@ -450,3 +452,93 @@ draw_map_quarter(sf_merged, "2020.4", max_positive) +
 
 ### SAS
 
+# Extended Example: Interactive Choropleth Maps
+
+## Software Requirements {.tabset}
+
+### R
+
+```{r interactive_packages_R, message=FALSE}
+# Same as the previous sections
+library(sf); library(tidyverse); library(ggplot2)
+library(lubridate); library(scales)
+# New in this section
+library(plotly) # Draw interactive maps with `ggplot2`
+```
+
+## Generate Interactive/Animated Choropleth Map {.tabset}
+
+### R
+
+```{r interactive_data_R, message=FALSE}
+# Download up-to-date .csv
+df_covid = read_csv(
+  url("https://covidtracking.com/data/download/all-states-history.csv")
+  )
+
+# Select variables and delete territories
+df_covid = df_covid %>% 
+  select(date, state, positiveIncrease) %>% 
+  filter( !(state %in% c("AS", "GU", "MP", "PR", "VI")) )
+```
+
+```{r aggregate_state_month, message=FALSE}
+# Aggregate by State and Month
+df_state_m = df_covid %>% 
+  mutate(month = format(as.Date(date), "%Y-%m")) %>% # "year-month"
+  group_by(month, state) %>%
+  summarise(total_pos = sum(positiveIncrease)) %>%
+  ungroup()
+
+# fill 0 for states not included in early 2020
+df_state_m = df_state_m %>% 
+  complete(month, state, fill = list(total_pos = 0))
+```
+
+```{r merge_map_and_month}
+# Merge with sf object
+sf_merged_month = df_state_m %>% 
+  left_join(sf_us_shifted, by = c("state" = "STUSPS"))
+sf_merged_month
+```
+
+```{r show_merged_sf_month}
+sf_merged_month %>% 
+  filter(NAME == "Florida") %>% 
+  select(1,2,8,12,3) %>% # only show related columns
+  head(5) %>% 
+  kable(format = 'html', escape = FALSE, align = 'c') %>%
+  kable_paper("hover", full_width = TRUE)
+```
+
+```{r plotly_R, cache=TRUE}
+p = sf_merged_month %>%
+  filter(month != "2020-02" & month != "2020-01") %>%
+  ggplot(aes(frame = month)) +
+  geom_sf(color = NA,
+          mapping = aes(fill = total_pos,
+                        geometry = geometry,
+                        text = paste("Positives in ", NAME, "\n",
+                                     comma(total_pos)))) +
+  coord_sf(crs = "+proj=merc") +
+  theme(
+  # Remove background
+  panel.border = element_blank(),  
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  panel.background = element_blank(),
+  # Hide axis
+  axis.line = element_blank(),
+  axis.text = element_blank(),
+  axis.ticks = element_blank(),
+  # Adjust legend
+  legend.text = element_text(size = 8) ) +
+  # Apply color scheme (red)
+  scale_fill_distiller(palette = "Reds",
+                       direction = +1,
+                       labels = comma) + 
+  labs(fill = "Counts")
+fig = ggplotly(p, tooltip = c("text")) %>% 
+  animation_opts(transition = 0, redraw = TRUE)
+fig
+```
