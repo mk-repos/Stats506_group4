@@ -190,12 +190,16 @@ head(sf_us, 5)
 
 ### SAS
 
-Drawing the cholopleth map in SAS is simple since SAS have already made the shapefile for us. We can use the data map.us to see what shapefiles look like in the SAS. 
+Drawing the cholopleth map in SAS is simple since SAS have already included the shapefile for us. We can use the data `map.us` to see what shapefiles look like in the SAS. 
 
 ```{r,eval = FALSE}
 proc print data = maps.us (OBS = 12);
 run;
 ```
+![](SAS_document/out.png)
+
+*will insert the explanation about the shape file*
+
 
 
 
@@ -324,6 +328,11 @@ sf_us_shifted %>%
  - create a similar final US map
 
 ### SAS
+
+After including the 
+
+![](SAS_document/gmap.png)
+
 
 # Prepare Count Data to Display
 
