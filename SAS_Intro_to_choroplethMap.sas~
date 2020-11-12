@@ -1,0 +1,10 @@
+pattern v=e;
+title 'EXAMPLE #2 - US MAP Data set';
+* use a SAS-supplied map data set (US) as both the map and response data sets;
+proc G
+map=maps.us
+data=maps.us (obs=1)
+all;
+id state;
+choro state / nolegend;
+run;
