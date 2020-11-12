@@ -39,7 +39,6 @@ vignettes/*.pdf
 .Renviron
 
 # Original
-*.csv
 *.XPT
 *.gz
 .DS_Store
