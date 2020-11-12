@@ -133,6 +133,13 @@ The first problem is addressed by ***Geographic CRSs*** and the second by ***Pro
 
 In this tutorial, we use `NAD 83` as our *Geographic CRS* and `Mercator` as our *Projected CRS*.
 
+To refer to a CRS, there are two popular formats: the [`EPSG`](https://epsg.io/) format and the [`proj.4`](https://proj.org/) format. For example, NAD83 is expressed in each format as follows.
+
+ - EPSG format : "EPSG:4269"
+ - proj.4 format : "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"
+
+The advantage of the proj.4 notation is that the user can add options to this string. For example, `+lat_0=` sets the latitude of origin, and `+lon_wrap=` sets the longitude to use for wrapping (Determine the left and right edge of the Earth).
+
 ## "Edge Case": Object on the International Date Line
 
 Another small issue is that although the boundaries are actually continuous on the Earth's surface, some countries are divided by the International Date Line. For example, a part of Alaska exists exactly on the International Date Line. As a result, Alaska is shown separately on the western-most and eastern-most sides of the world map.
