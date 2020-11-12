@@ -162,6 +162,8 @@ library(sf) # handling shapefiles
 
 ### SAS
 
+We will use the `gamp` procedure in Map library in this tutorial. Unfortunately, `gamp` procedure is not available for the free university edition. But we can access that procedure by using SAS on [midesktop](https://midesktop.umich.edu/portal/webclient/index.html#/launchitems) through the UM computing service. In this tutorial, we use SAS 9.4. 
+
 ## How to Handle Shapefiles {.tabset}
 
 ### R
@@ -187,6 +189,15 @@ head(sf_us, 5)
 ### Python
 
 ### SAS
+
+Drawing the cholopleth map in SAS is simple since SAS have already made the shapefile for us. We can use the data map.us to see what shapefiles look like in the SAS. 
+
+```{r,eval = FALSE}
+proc print data = maps.us (OBS = 12);
+run;
+```
+
+
 
 ## How to Draw a US Map {.tabset}
 
