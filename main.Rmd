@@ -149,7 +149,7 @@ We unzipped this compressed file and saved the entire contents into a subdirecto
 
 ## Software Requirements {.tabset}
 
-### R
+### R{-}
 
 ```{r gis_packages_R, message=FALSE}
 library(tidyverse) # Data handling
@@ -158,15 +158,15 @@ library(ggpubr) # Helper functions for `ggplot2` e.g. multiple plots
 library(sf) # handling shapefiles
 ```
 
-### Python
+### Python{-}
 
-### SAS
+### SAS{-}
 
 We will use the `gamp` procedure in Map library in this tutorial. Unfortunately, `gamp` procedure is not available for the free university edition. But we can access that procedure by using SAS on [midesktop](https://midesktop.umich.edu/portal/webclient/index.html#/launchitems) through the UM computing service. In this tutorial, we use SAS 9.4. 
 
 ## How to Handle Shapefiles {.tabset}
 
-### R
+### R{-}
 
 *will insert explanation of `sf` package*
 
@@ -186,26 +186,27 @@ We can see the resulting object is a tibble. Therefore, operations such as delet
 head(sf_us, 5)
 ```
 
-### Python
+### Python{-}
 
-### SAS
+### SAS{-}
 
-Drawing the cholopleth map in SAS is simple since SAS have already included the shapefile for us. We can use the data `map.us` to see what shapefiles look like in the SAS. 
+We can use the `MAPIMPORT` to import the shapefile into the SAS. 
 
 ```{r,eval = FALSE}
-proc print data = maps.us (OBS = 12);
+PROC MAPIMPORT datafile = "\maps\cb_2018_us_state_500k.shp"
+out = USmap;
 run;
 ```
-![](SAS_document/out.png)
 
-*will insert the explanation about the shape file*
+
+*will insert the explanation about the shapefile*
 
 
 
 
 ## How to Draw a US Map {.tabset}
 
-### R
+### R{-}
 
 You can easily draw state boundaries recorded as multi polygons in the `geometry` column by passing `sf` objects to `ggplot2`.
 
@@ -320,18 +321,14 @@ sf_us_shifted %>%
   theme_void() # hide coordinates and grid line for visibility
 ```
 
-### Python
+### Python{-}
 
  - draw a raw map
  - drop unnecessary territories
  - shift Alaska and Hawaii somehow
  - create a similar final US map
 
-### SAS
-
-After including the 
-
-![](SAS_document/gmap.png)
+### SAS{-}
 
 
 # Prepare Count Data to Display
@@ -346,7 +343,7 @@ For more information on this dataset, including definitions of variable names, s
 
 ## Software Requirements {.tabset}
 
-### R
+### R{-}
 
 ```{r aggregate_packages_R, message=FALSE}
 # Same as the previous sections
@@ -355,13 +352,13 @@ library(tidyverse)
 library(lubridate) # Aggregation by Datetime
 ```
 
-### Python
+### Python{-}
 
-### SAS
+### SAS{-}
 
 ## Merge COVID-19 Count with Geographic Data {.tabset}
 
-### R
+### R{-}
 
 ```{r prepare_data_R, message=FALSE}
 # Download up-to-date .csv
@@ -407,15 +404,15 @@ sf_merged %>%
   kable_paper("hover", full_width = TRUE)
 ```
 
-### Python
+### Python{-}
 
-### SAS
+### SAS{-}
 
 # Generate Choropleth Maps
 
 ## Software Requirements {.tabset}
 
-### R
+### R{-}
 
 ```{r graphics_packages_R, message=FALSE}
 # Same as the previous sections
@@ -424,9 +421,9 @@ library(sf); library(tidyverse); library(ggplot2)
 library(scales) # determine breaks and labels for graphics
 ```
 
-### Python
+### Python{-}
 
-### SAS
+### SAS{-}
 
 ## Show Choropleth Maps for each Quarter in 2020 {.tabset}
 
@@ -467,7 +464,7 @@ draw_map_quarter = function(sf_obj, target_q, max_lim) {
 }
 ```
 
-#### First Quarter
+#### First Quarter{-}
 
 ```{r q1_choropleth_R, cache=TRUE}
 # Generate choropleth for each quarter
@@ -475,30 +472,30 @@ draw_map_quarter(sf_merged, "2020.1", max_positive) +
   ggtitle("2020 Q1 - Total COVID-19 Cases")
 ```
 
-#### Second Quarter
+#### Second Quarter{-}
 
 ```{r q2_choropleth_R, cache=TRUE}
 draw_map_quarter(sf_merged, "2020.2", max_positive) +
   ggtitle("2020 Q2 - Total COVID-19 Cases")
 ```
 
-#### Third Quarter
+#### Third Quarter{-}
 
 ```{r q3_choropleth_R, cache=TRUE}
 draw_map_quarter(sf_merged, "2020.3", max_positive) +
   ggtitle("2020 Q3 - Total COVID-19 Cases")
 ```
 
-#### Fourth Quarter
+#### Fourth Quarter{-}
 
 ```{r q4_choropleth_R, cache=TRUE}
 draw_map_quarter(sf_merged, "2020.4", max_positive) +
   ggtitle("2020 Q4 - Total COVID-19 Cases")
 ```
 
-### Python
+### Python{-}
 
-### SAS
+### SAS{-}
 
 # Extended Example: Interactive Choropleth Maps
 
@@ -506,7 +503,7 @@ As an extended example, we generate an interactive map that allows users to choo
 
 ## Software Requirements {.tabset}
 
-### R
+### R{-}
 
 ```{r interactive_packages_R, message=FALSE}
 # Same as the previous sections
@@ -517,7 +514,7 @@ library(plotly) # Draw interactive maps with `ggplot2`
 
 ## Generate Interactive/Animated Choropleth Map {.tabset}
 
-### R
+### R{-}
 
 Using the same data set used for the quarterly aggregation, we now aggregate this on a monthly basis.
 
