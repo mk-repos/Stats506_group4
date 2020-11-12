@@ -178,7 +178,7 @@ filename = "./maps/cb_2018_us_state_500k.shp"
 sf_us = read_sf(filename)
 ```
 
-We can see the resulting object is a tibble. Therefore, operations such as deleting certain states from the map can be easily performed using `dplyr`.
+We can see the resulting object is a tibble. Therefore, operations such as deleting certain states from the map can be easily performed using `dplyr`. We can also check what kind of CRS this object is using from this output.
 
 ```{r show_sf_tibble_R, message=FALSE}
 head(sf_us, 5)
@@ -192,7 +192,7 @@ head(sf_us, 5)
 
 ### R
 
-You can easily draw state boundaries recorded as multi-polygons by passing `sf` objects to `ggplot2`.
+You can easily draw state boundaries recorded as multi polygons in the `geometry` column by passing `sf` objects to `ggplot2`.
 
 *will insert explanation of ggplot2 and `geom_sf()`, `coord_sf(xlim, ylim)`*
 
