@@ -26,7 +26,7 @@ We first explain geographic vector data and shapefiles in general, and then we p
 
 # Brief Introduction to Geographic Vector Data
 
-*Note: This section will use some codes to show plots and vectors, but will not be repeated in multiple languages, because these are just for explanation and not directly related to our examples.*
+*Note: This section uses some codes to show sample plots and vectors, but will not be repeated in multiple languages, because these are the very basics of geographic data.*
 
 *shapefile* is a kind of GIS (Geographic Information System) format that can store the location, shape, and attribute information of geographical objects such as national and state borders, buildings, streets, etc.
 
@@ -113,11 +113,11 @@ However, without some transformation, latitude and longitude cannot be displayed
 
 ## Understanding Geographic Coodinate System
 
-There are not many things you have to worry about when drawing a map because in many cases, the software will take care of it. However it should be noted that geographic coordinate systems are actually quite complex.
+There are not many things you have to worry about when drawing a map because the software will take care of most of the tedious works. However it should be noted that geographic coordinate systems are actually quite complex, and it's important to understand how it works because, as we'll see in this tutorial, sometimes you'll need to transform the coordinates.
 
 Since the Earth is not exactly round, the values of latitude and longitude vary slightly depending on how you approximate the Earth's surface and what point on the Earth you use as a reference point. Thus, there are several different ***Coordinate Reference Systems (CRSs)*** available in the world. They approximate the Earth's surface somehow and define the relationship between the geographic objects and the surface of the Earth. Since you cannot join multiple `shapefile` that are based on different CRSs, you should check what CRS your shapefile is based on and transform them if needed.
 
-In addition to the problem of defining coordinates, there is another problem of how to represent an object on the surface of a sphere on a flat plane. The coordinates defined by angles (i.e., longitude and latitude) cannot be transformed into Cartesian coordinates without some distortion.
+In addition to the problem of defining coordinates on the Earth's surface, there is another problem of how to represent an object on the Earth's surface on a flat plane. The coordinates defined by angles (i.e., longitude and latitude) cannot be transformed into Cartesian coordinates without some distortion.
 
 The first problem is addressed by ***Geographic CRSs*** and the second by ***Projected CRSs***.
 
@@ -133,9 +133,16 @@ The first problem is addressed by ***Geographic CRSs*** and the second by ***Pro
 
 In this tutorial, we use `NAD 83` as our *Geographic CRS* and `Mercator` as our *Projected CRS*.
 
+To refer to a CRS, there are two popular formats: the [`EPSG`](https://epsg.io/) format and the [`proj.4`](https://proj.org/) format. For example, `NAD83` is expressed in each format as follows.
+
+ - NAD83 in EPSG format : "EPSG:4269"
+ - NAD83 in proj.4 format : "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"
+
+The advantage of the proj.4 notation is that the user can add options to this string. For example, `+lat_0=` sets the latitude of origin, and `+lon_wrap=` sets the longitude to use for wrapping, which determines the left and right edge of the Earth.
+
 ## "Edge Case": Object on the International Date Line
 
-Another small issue is that although the boundaries are actually continuous on the Earth's surface, some countries are divided by the International Date Line. For example, a part of Alaska exists exactly on the International Date Line. As a result, Alaska is shown separately on the western-most and eastern-most sides of the world map.
+Another small issue is that although the boundaries are actually continuous on the Earth's surface, some countries are divided by the International Date Line. For example, a part of Alaska exists exactly on the International Date Line. As a result, Alaska is typically shown separately on the western-most and eastern-most sides of the world map.
 
 Different software has different ways of dealing with this, but it is sometimes necessary to shift the entire coordinate system.
 
