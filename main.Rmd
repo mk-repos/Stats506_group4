@@ -52,7 +52,8 @@ Most of the objects on the map can be represented by a combination of points, li
 
 The following figure shows vector data of points, lines and polygons in a Cartesian coordinate system.
 
-```{r demonstrate_sf_points, message=FALSE, warning=FALSE, echo=FALSE, fig.height=5}
+```{r demonstrate_sf_points, message=FALSE, warning=FALSE, echo=FALSE, fig.height=5, fig.cap=cap}
+cap = "***Figure: Examples of displaying vector data***"
 library(tidyverse); library(ggplot2); library(ggpubr); library(sf)
 # set coordinates to draw
 area_51 = c(37.234332396, -115.80666344)
@@ -98,7 +99,9 @@ ggarrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
 
 Next, using Michigan as an example, we display Michigan's vector data on the Cartesian coordinate system.
 
-```{r draw_michigan_map, echo=FALSE, warning=FALSE, fig.height=5}
+```{r draw_michigan_map, echo=FALSE, warning=FALSE, fig.height=5, fig.cap=cap}
+cap = paste0("***Figure: Example of displaying a geographic object on",
+             " the Cartesian coordinate system***")
 filename = "./maps/cb_2018_us_state_500k.shp"
 sf_us = read_sf(filename)
 sf_us %>% 
@@ -175,6 +178,14 @@ Drawing of the map in R can be done in `ggplot2`, using its `geom_sf()` designed
 
 ### Python{-}
 
+```{python, python.reticulate=FALSE, eval=FALSE}
+import pandas as pd # Data handling
+import geopandas as geopd # Handling shapefile
+import matplotlib.pyplot as plt # Generating plots
+```
+
+In addition to these modules, you will likely need to install `descartes` module by `pip install descartes` to use geometric objects with matplotlib.
+
 ### SAS{-}
 
 We will use the `gamp` procedure in Map library in this tutorial. Unfortunately, `gamp` procedure is not available for the free university edition. But we can access that procedure by using SAS on [midesktop](https://midesktop.umich.edu/portal/webclient/index.html#/launchitems) through the UM computing service. In this tutorial, we use SAS 9.4. 
@@ -201,6 +212,49 @@ head(sf_us, 5)
 
 ### Python{-}
 
+To handle shapefiles in python, you can use a library called `geopandas`. `read_file()` function of this library reads a shapefile as a `GeoDataFrame` object which is a `pandas.DataFrame` with a geometry column containing vector information.
+
+Operations such as deleting rows and merging with other data frames are the same as for `pandas.DataFrame`. Thus you can manipulate shapefiles just as easily as with normal data frames in pandas.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+filename = "./maps/cb_2018_us_state_500k.shp"
+sf_us = geopd.read_file(filename)
+```
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+type(sf_us)
+```
+```
+geopandas.geodataframe.GeoDataFrame
+```
+
+We can check what kind of CRS this object is using by `.crs` attribute.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+sf_us.crs
+```
+```
+<Geographic 2D CRS: EPSG:4269>
+Name: NAD83
+Axis Info [ellipsoidal]:
+- Lat[north]: Geodetic latitude (degree)
+- Lon[east]: Geodetic longitude (degree)
+Area of Use:
+- name: North America - onshore and offshore: Canada - Alberta; British Columbia; Manitoba; New Brunswick; Newfoundland and Labrador; Northwest Territories; Nova Scotia; Nunavut; Ontario; Prince Edward Island; Quebec; Saskatchewan; Yukon. Puerto Rico. United States (USA) - Alabama; Alaska; Arizona; Arkansas; California; Colorado; Connecticut; Delaware; Florida; Georgia; Hawaii; Idaho; Illinois; Indiana; Iowa; Kansas; Kentucky; Louisiana; Maine; Maryland; Massachusetts; Michigan; Minnesota; Mississippi; Missouri; Montana; Nebraska; Nevada; New Hampshire; New Jersey; New Mexico; New York; North Carolina; North Dakota; Ohio; Oklahoma; Oregon; Pennsylvania; Rhode Island; South Carolina; South Dakota; Tennessee; Texas; Utah; Vermont; Virginia; Washington; West Virginia; Wisconsin; Wyoming. US Virgin Islands.  British Virgin Islands.
+- bounds: (167.65, 14.92, -47.74, 86.46)
+Datum: North American Datum 1983
+- Ellipsoid: GRS 1980
+- Prime Meridian: Greenwich
+```
+
+We can see that this object looks exactly like a `pandas.DataFrame` by printing. 
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+sf_us.head()
+```
+
+`geometry` column itself is an object called `GeoSeries`. A `GeoDataFrame` can be thought of as a `DataFrame` that holds a `GeoSeries` inside.
+
 ### SAS{-}
 
 We can use the `MAPIMPORT` to import the shapefile into the SAS. 
@@ -211,11 +265,7 @@ out = USmap;
 run;
 ```
 
-
 *will insert the explanation about the shapefile*
-
-
-
 
 ## How to Draw a US Map {.tabset}
 
@@ -225,7 +275,9 @@ You can easily draw state boundaries recorded as multi polygons in the `geometry
 
 `ggplot2` has a geom called `geom_sf()`, which can be used to draw points, lines, or polygons stored as simple features. `coord_sf()` controls CRS options and can be used with `geom_sf()`. Here, we set the minimum and maximum values of latitude and longitude in `xlim=` and `ylim=` options for a demonstration.
 
-```{r draw_us_whole_R, cache=TRUE, fig.height=5}
+```{r draw_us_whole_R, cache=TRUE, fig.height=5, fig.cap=cap}
+cap = paste0("***Figure: View of the raw shapefile at the state level",
+             " provided by the Census Bureau***")
 sf_us %>% 
   ggplot() +
   geom_sf() +
@@ -235,7 +287,9 @@ sf_us %>%
 
 The Census Bureau's shapefiles also include coordinates for Alaska, Hawaii, or other distant territories, so they will not be displayed at the scale we desire, because they are widely scattered across the globe. The easiest solution is to drop the rows that contain these off-mainland states and territories. We can use functions of `dplyr`, such as `filter()`, as with a normal tibble.
 
-```{r draw_us_dropped_R, cache=TRUE, fig.height=5}
+```{r draw_us_dropped_R, cache=TRUE, fig.height=5, fig.cap=cap}
+cap = paste0("***Figure: U.S. map after off-mainland states and territories",
+             " dropped***")
 sf_us %>% 
   # drop off-mainland states and territories
   filter( !(NAME %in% c("Alaska",
@@ -306,7 +360,9 @@ After these operations, we have a map of the United States on the scale we desir
 
 `coord_sf()` can also be used to specify which projection method to use when creating a map in `ggplot2`. Here we demonstrate the two Projected CRSs introduced at the beginning of this tutorial. We only need to pass the desired `proj.4` string as an argument.
 
-```{r draw_us_transformed_R, cache=TRUE, fig.height=5}
+```{r draw_us_transformed_R, cache=TRUE, fig.height=5, fig.cap=cap}
+cap = paste0("***Figure: U.S. map after shifting/scaling Alaska and Hawaii,",
+             " using two different projection CRS***")
 # Mercator Projection
 mercator = sf_us_shifted %>% 
   ggplot() +
@@ -328,7 +384,8 @@ ggarrange(mercator, equal_area, ncol = 2)
 
 The final map we will use in the later sections is the one with Alaska and Hawaii, projected by Mercator CRS.
 
-```{r final_map_R, cache=TRUE, fig.height=5}
+```{r final_map_R, cache=TRUE, fig.height=5, fig.cap=cap}
+cap = "***Figure: The resulting U.S. map we use for the following examples***"
 sf_us_shifted %>% 
   ggplot() +
   geom_sf(fill = NA) +
@@ -338,13 +395,105 @@ sf_us_shifted %>%
 
 ### Python{-}
 
- - draw a raw map
- - drop unnecessary territories
- - shift Alaska and Hawaii somehow
- - create a similar final US map
+We can easily draw state boundaries recorded as multi polygons in the `geometry` column using [`.plot()`](https://geopandas.org/reference.html#geopandas.GeoDataFrame.plot)
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+sf_us.plot()
+plt.show()
+```
+
+![***Figure: View of the raw shapefile at the state level provided by the Census Bureau***](./python_files/whole_map_python.png)
+
+The Census Bureau’s shapefiles also include coordinates for Alaska, Hawaii, or other distant territories, so they are not displayed at the scale we desire. The easiest solution is to drop the rows that contain these off-mainland states and territories.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+dropstates = ["Alaska",
+              "Hawaii",
+              "Puerto Rico",
+              "Guam",
+              "United States Virgin Islands",
+              "Commonwealth of the Northern Mariana Islands",
+              "American Samoa"]
+sf_us.query('NAME not in @dropstates').plot()
+plt.show()
+```
+
+![***Figure: U.S. map after off-mainland states and territories dropped***](./python_files/dropped_map_python.png)
+
+However, we want to include Alaska and Hawaii because our purpose is to make a state-by-state comparison. Thus, as in the R example, we shrink and shift Alaska and Hawaii to be displayed closer to the mainland.
+
+First, since Alaska is on the date line and divided into two pieces, we need to change the range of longitude from -180-180 to 0-360. Since there is no tool in python similar to the function `st_shift_longitude()` used in the R example (which transfers all coordinates below 0 to between 180-360), we need to create a custom CRS.
+
+The simplest way to achieve this is to edit `proj.4` string. As introduced at the beginning of this tutorial, we can add options to the `proj.4` string. We will add `+lon_wrap=` option to the default NAD83 string in order to change the longitude to be wrapped.
+
+The argument to `+lon_wrap=` is a center longitude. Thus, if we assign `+lon_wrap=180`, the entire coordinates will be shown between 0-360.
+
+To change the CRS, `.to_crs()` method can be used. We only need to pass the desired `proj.4` string as an argument.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+# default CRS of our data
+nad83 = "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"
+# custom parameter
+wrap = "+lon_wrap=180"
+# change CRS of our GeoDataFrame
+sf_us_360 = sf_us.to_crs(" ".join([nad83,wrap]))
+```
+
+Next we will shift and scale Alaska and Hawaii. There are many [geometric manipulations available in geopandas](https://geopandas.org/geometric_manipulations.html), including affine transformation by a matrix A, and shift, scale, or rotate by a certain latitude and longitude value.
+
+Note that these operations are available for `GeoSeries`, and that the resulting output is only the `geometry` column of the original `GeoDataFrame`. Therefore, after these operations, we need to overwrite the existing `geometry` column with the updated `GeoSeries`. This can be achieved by using `.set_geometry()` method of `GeoDataFrame`.
+
+`.scale()` method returns scaled geometries. It allows us to specify not only the scaling factor in the x-y direction, but also the origin for the scaling operation. We specify `center = 'centroid'` here because we want to scale Alaska and Hawaii around their original place. The amount of shift in the direction of latitude and longitude is the same as the value determined by trial and error in our R example.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+Alaska = sf_us_360.query('NAME == "Alaska"')
+Alaska_geo = Alaska.scale(xfact=0.3, yfact=0.3, origin='centroid'
+                         ).translate(xoff=36, yoff=-38)
+Alaska = Alaska.set_geometry(Alaska_geo)
+```
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+Hawaii = sf_us_360.query('NAME == "Hawaii"')
+Hawaii_geo = Hawaii.scale(xfact=0.3, yfact=0.3, origin='centroid'
+                                    ).translate(xoff=53, yoff=5)
+Hawaii = Hawaii.set_geometry(Hawaii_geo)
+```
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+sf_us_shifted = geopd.GeoDataFrame(
+    pd.concat(
+        [sf_us_360.query('NAME not in @dropstates'),
+         Alaska,
+         Hawaii])
+)
+```
+
+`.to_crs()` method can also be used to specify which projection method to use when creating a graphic. Here we demonstrate the two *Projected CRSs* introduced at the beginning of this tutorial.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,10))
+sf_us_shifted.to_crs("+proj=merc").plot(ax=ax1)
+ax1.set_title("Mercator Projection")
+ax1.axis('off')
+sf_us_shifted.to_crs("+proj=aea +lat_1=25 +lat_2=50 +lon_0=-100").plot(ax=ax2)
+ax2.set_title("Equal Area Projection")
+ax2.axis('off')
+plt.show()
+```
+
+![***Figure: U.S. map after shifting/scaling Alaska and Hawaii, using two different projection CRS***](./python_files/transformed_map_python.png)
+
+The final map we will use in the later sections is the one with Alaska and Hawaii, projected by Mercator CRS.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+sf_us_shifted.to_crs("+proj=merc").plot(color="white", edgecolor='black')
+plt.axis('off')
+plt.show()
+```
+
+![***Figure: The resulting U.S. map we use for the following examples***](./python_files/final_map_python.png)
 
 ### SAS{-}
-
 
 # Prepare Count Data to Display
 
@@ -366,6 +515,8 @@ library(tidyverse)
 # New in this section
 library(lubridate) # Aggregation by Datetime
 ```
+
+In order to make it easier to aggregate this daily count data on a quarterly basis, we use `lubridate` package.
 
 ### Python{-}
 
@@ -390,7 +541,11 @@ df_covid = df_covid %>%
   filter( !(state %in% c("AS", "GU", "MP", "PR", "VI")) )
 ```
 
-*Insert explanatio of `quarter()` function in `lubridate` package*
+The `lubridate` package is part of the `tidyverse` family and includes many functions for dealing with dates and times variables, such as aggregation of dates.
+
+In this data set, the number of daily positives is recorded in a row, and each row has a date column recorded as `YYYY-MM-DD`. We want to sum up the number of positives on a quarterly basis. By using `quarter()` function in `lubridate` package, we convert each date into a quarter. Then we group rows by each quarter and state.
+
+Also we record the maximum number of new infections per quarter here, which we will use later for our maps.
 
 ```{r aggregate_state_q, message=FALSE}
 # Aggregate by State and Quarter
@@ -408,11 +563,16 @@ df_state_q = df_state_q %>%
   pivot_wider(id_cols = state, names_from = q, values_from = total_pos)
 ```
 
+Since the `sf` object is also a `tibble`, it can be easily merged with this aggregated data.
+
 ```{r merge_map_and_data}
 # Merge with sf object
 sf_merged = sf_us_shifted %>% 
-  left_join(df_state_q, by = c("STUSPS" = "state"))
+  left_join(df_state_q, by = c("STUSPS" = "state")) %>% 
+  rename(state = STUSPS)
 ```
+
+The combined tibble contains the number of new infections per quarter for each state, in addition to the `geometry` for each state.
 
 ```{r show_merged_sf}
 sf_merged %>% 
@@ -439,6 +599,8 @@ library(sf); library(tidyverse); library(ggplot2)
 library(scales) # determine breaks and labels for graphics
 ```
 
+Although we don't necessarily need additional packages in this section, we use the `scales` package from the `tidyverse` family to improve the aesthetics of graphs, such as adding commas to large numbers inside `ggplot2`.
+
 ### Python{-}
 
 ### SAS{-}
@@ -447,7 +609,15 @@ library(scales) # determine breaks and labels for graphics
 
 ### R {.tabset}
 
-*will insert an explanation of the following function*
+In order to display the choropleth maps for each quarter with the exactly same design, we created the following function.
+
+Even though `geom_sf()` displays a map, the aesthetics control is exactly the same as a regular plot in ggplot2. Since we want to fill in each state according to the number of cases in each quarter, we specify a column storing total number of cases in each quarter for `fill=` option.
+
+Since our goal is to display the map which is easy to understand, we mostly assign blanks in `theme()` options to get rid of background, coordinates, and other unnecessary aesthetics.
+
+We can change the color of choropleth maps by using `scale_fill_distiller()` option. Here, we set reds to become darker as the number of cases increases. `labels=` adjusts the format of numbers displayed next to a color bar. We set `comma_format()` from `scales` package so that it shows large numbers with comma. `guides()` option can adjust the size of the color bar.
+
+We define an argument `max_lim` in this function. Because the maximum number of infections per state differs from quarter to quarter, the color thresholds of the graph may change from quarter to quarter. To ensure that the color intensity of the graph for all quarters is of the same thresholds, we have specified a pre-saved maximum value here.
 
 ```{r choropleth_func_R}
 draw_map_quarter = function(sf_obj, target_q, max_lim) {
@@ -484,7 +654,9 @@ draw_map_quarter = function(sf_obj, target_q, max_lim) {
 
 #### First Quarter{-}
 
-```{r q1_choropleth_R, cache=TRUE}
+```{r q1_choropleth_R, cache=TRUE, fig.cap=cap}
+cap = paste0("***Figure: Total count of COVID-19 positives in each state, ",
+             "first quarter of 2020***")
 # Generate choropleth for each quarter
 draw_map_quarter(sf_merged, "2020.1", max_positive) +
   ggtitle("2020 Q1 - Total COVID-19 Cases")
@@ -492,21 +664,27 @@ draw_map_quarter(sf_merged, "2020.1", max_positive) +
 
 #### Second Quarter{-}
 
-```{r q2_choropleth_R, cache=TRUE}
+```{r q2_choropleth_R, cache=TRUE, fig.cap=cap}
+cap = paste0("***Figure: Total count of COVID-19 positives in each state, ",
+             "second quarter of 2020***")
 draw_map_quarter(sf_merged, "2020.2", max_positive) +
   ggtitle("2020 Q2 - Total COVID-19 Cases")
 ```
 
 #### Third Quarter{-}
 
-```{r q3_choropleth_R, cache=TRUE}
+```{r q3_choropleth_R, cache=TRUE, fig.cap=cap}
+cap = paste0("***Figure: Total count of COVID-19 positives in each state, ",
+             "third quarter of 2020***")
 draw_map_quarter(sf_merged, "2020.3", max_positive) +
   ggtitle("2020 Q3 - Total COVID-19 Cases")
 ```
 
 #### Fourth Quarter{-}
 
-```{r q4_choropleth_R, cache=TRUE}
+```{r q4_choropleth_R, cache=TRUE, fig.cap=cap}
+cap = paste0("***Figure: Total count of COVID-19 positives in each state, ",
+             "fourth quarter of 2020***")
 draw_map_quarter(sf_merged, "2020.4", max_positive) +
   ggtitle("2020 Q4 - Total COVID-19 Cases")
 ```
@@ -517,7 +695,7 @@ draw_map_quarter(sf_merged, "2020.4", max_positive) +
 
 # Extended Example: Interactive Choropleth Maps
 
-As an extended example, we generate an interactive map that allows users to choose which month to view.
+As extended examples, we generate an interactive map that allows users to choose which month to view. By moving the HTML slider, users can easily see which states were hotspots of infection in which months. Interactive maps are perfect for visualizing data that changes over time and space, such as the number of infections shown in this tutorial, as well as weather, car accidents, crime rates, etc.
 
 ## Software Requirements {.tabset}
 
@@ -530,11 +708,19 @@ library(sf); library(tidyverse); library(ggplot2); library(scales)
 library(plotly) # Draw interactive maps with `ggplot2`
 ```
 
+[Plotly](https://plotly.com/) is a library for creating animated and interactive graphs, which can be used in R, Python, and other languages. It provides a function `ggplotly()` to easily give existing ggplot objects an interactive structure.
+
+### Python{-}
+
 ## Generate Interactive/Animated Choropleth Map {.tabset}
 
 ### R{-}
 
 Using the same data set used for the quarterly aggregation, we now aggregate this on a monthly basis.
+
+`format()` is a base function which can format any R object for pretty printing. Here, we create a column storing months as `2020-11`, and group by month and state. 
+
+This data does not have all of the month and state combinations, as some states did not report the number of infections in early 2020. `complete()` from `dplyr` can complete the tibble by filling in missing combinations.
 
 ```{r aggregate_state_month, message=FALSE}
 # Aggregate by State and Month
@@ -549,13 +735,15 @@ df_state_m = df_state_m %>%
   complete(month, state, fill = list(total_pos = 0))
 ```
 
+We again merge this COVID count data with our `sf` object.
+
 ```{r merge_map_and_month}
 # Merge with sf object
 sf_merged_month = df_state_m %>% 
   left_join(sf_us_shifted, by = c("state" = "STUSPS"))
 ```
 
-We prepared a data frame in which there is one line per month for each state.
+A few rows of this resulting tibble are shown below. There is one line per month for each state.
 
 ```{r show_merged_sf_month}
 sf_merged_month %>% 
@@ -566,13 +754,27 @@ sf_merged_month %>%
   kable_paper("hover", full_width = TRUE)
 ```
 
-*will insert an explanation about `ggplotly`. `frame` option can be used for an animated slider.*
+[Plotly](https://plotly.com/r/) in R creates web widgets that can be interactively manipulated by users using HTML, CSS, and Javascript. It can be embedded in Rmarkdown's HTML output, or used in shiny web applications. Not only can the Choropleth Map be interactive, but also the usual histograms and scattergrams can be made interactive.
 
-When users mouse over a state, the number of new infections for that state in that month is shown in a hover view.
+`ggplotly()` from `plotly` library converts a ggplot object into a plotly object. This will allow us to convert existing maps into interactive maps.
 
-January and February 2020 are not shown on this interactive map because data are not available for almost all states.
+We use `frames` to create an interactive map that allows the user to change the month displayed. `frames` refers to a list of figures. Just as in regular animations, by switching these frames and displaying multiple figures in succession, we can create an animation effect where the months seem to be changing. In addition, by creating a slider to control the transition of the frames, users can move the slider to display the specific month (specific frame) they want to see. We can control animations and interactive sliders using functions from `plotly` library such as `animation_opts()` and `animation_slider()`.
 
-```{r plotly_R, warning=FALSE, cache=TRUE}
+Because we want the frames to switch per month, we set `aes(frame = month)` in `ggplot()`. You have to set it as an aesthetics in the preceding `ggplot()`, not in `geom_sf()`, to be able to render it.
+
+By default, in order to smoothly connect the frames, a transition animation is played. For example, if a point moves from (1,1) to (2,2) between frames, it looks as if the point gradually moves. On a map, it is not desirable for the boundaries of a state to vibrate, so we set `transition = 0` inside `animation_opts()` options to disable transition animations. The `redraw=` option controls whether the entire graph is redrawn at each frame.
+
+By setting `hide = TRUE` in `animation_slider()` option, it is also possible to hide the slider for users to control.
+
+Inside `geom_sf()`, we can create a new aesthetics, `text=`. The string specified here can be displayed when the users locate their mouse cursor on the graph. Here, we want to display a string "*Positives in [STATE NAME] (newline) [# of CASES]*" for each state. Once you create a text, it should be mentioned inside `ggplotly(tooltip = c("text"))` call. `tooltip=` option controls which aesthetics to display in your `Plotly` graph. By doing this, when users mouse over a state, the number of new infections for that state in that month is shown in a hover view.
+
+The nice thing about `ggplotly` is that we can use most of the familiar ggplot options as they are. `theme()` options are the same as in the above quarterly example. The range of values in the color bars is automatically adjusted by `plotly` to be the same for all months, so there is no need to set a maximum value.
+
+January and February 2020 are not shown on this interactive map because positive cases did not exist in almost all states.
+
+```{r plotly_R, warning=FALSE, cache=TRUE, fig.cap=cap}
+cap = paste0("***Figure: Interactive choropleth map of total count of",
+             " COVID-19 positives per month in each state***")
 # First create a ggplot object just like before
 p = sf_merged_month %>%
   filter(month != "2020-02" & month != "2020-01") %>%
@@ -603,6 +805,9 @@ p = sf_merged_month %>%
 
 # Add a slider to change a month to display
 fig = ggplotly(p, tooltip = c("text")) %>% 
-  animation_opts(transition = 0, redraw = TRUE)
+  animation_opts(transition = 0, redraw = TRUE) %>% 
+  animation_slider(hide = FALSE)
 fig
 ```
+
+### Python{-}
