@@ -22,6 +22,8 @@ Furthermore, we show that choropleth maps are powerful for visualizing spatio-te
 
 Although we only use the U.S. data in this tutorial, we adopt a universal method using *shapefile* instead of using a special package made exclusively for the U.S. (such as `usmap` package in R) to ensure a consistent presentation across software tools and to allow users to apply our tutorial for visualizations in different resolutions (international, state, county, zip code, etc.) and in different situations.
 
+The COVID Tracking Project's state-level data can be downloaded [here](https://covidtracking.com/data/download) and is updated daily. `positive` variable shows the number of positive cases, and we aggregate this variable by month/quarter and visualize them. Although it is possible to download the latest data directly from the URL in software, we use data as of November 11, 2020 in this tutorial in order to make the graphical output of R, Python, and SAS comparable for the same day count.
+
 We first explain geographic vector data and shapefiles in general, and then we perform the analytical examples in R, Python and SAS software. The interactive map will be implemented in R and Python only.
 
 # Brief Introduction to Geographic Vector Data
@@ -50,7 +52,7 @@ Most of the objects on the map can be represented by a combination of points, li
 
 The following figure shows vector data of points, lines and polygons in a Cartesian coordinate system.
 
-```{r demonstrate_sf_points, message=FALSE, echo=FALSE, fig.height=5}
+```{r demonstrate_sf_points, message=FALSE, warning=FALSE, echo=FALSE, fig.height=5}
 library(tidyverse); library(ggplot2); library(ggpubr); library(sf)
 # set coordinates to draw
 area_51 = c(37.234332396, -115.80666344)
@@ -96,7 +98,7 @@ ggarrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
 
 Next, using Michigan as an example, we display Michigan's vector data on the Cartesian coordinate system.
 
-```{r draw_michigan_map, echo=FALSE, fig.height=5}
+```{r draw_michigan_map, echo=FALSE, warning=FALSE, fig.height=5}
 filename = "./maps/cb_2018_us_state_500k.shp"
 sf_us = read_sf(filename)
 sf_us %>% 
@@ -138,7 +140,7 @@ To refer to a CRS, there are two popular formats: the [`EPSG`](https://epsg.io/)
  - NAD83 in EPSG format : "EPSG:4269"
  - NAD83 in proj.4 format : "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"
 
-The advantage of the proj.4 notation is that the user can add options to this string. For example, `+lat_0=` sets the latitude of origin, and `+lon_wrap=` sets the longitude to use for wrapping, which determines the left and right edge of the Earth.
+The advantage of the `proj.4` notation is that the user can add options to this string. For example, `+lat_0=` sets the latitude of origin, and `+lon_wrap=` sets the longitude to use for wrapping, which determines the left and right edge of the Earth.
 
 ## "Edge Case": Object on the International Date Line
 
@@ -158,12 +160,18 @@ We unzipped this compressed file and saved the entire contents into a subdirecto
 
 ### R{-}
 
-```{r gis_packages_R, message=FALSE}
+```{r gis_packages_R, message=FALSE, warning=FALSE}
 library(tidyverse) # Data handling
 library(ggplot2) # Generating plots
 library(ggpubr) # Helper functions for `ggplot2` e.g. multiple plots
 library(sf) # handling shapefiles
 ```
+
+The [`sf`](https://r-spatial.github.io/sf/index.html) package is a package that represents simple features (common standard about geographic information, [ISO 19125-1:2004](https://www.iso.org/standard/40114.html)) in the form of `data.frame` and `tibble`, and implements reading, writing, and transformation of geographic features in an integrated manner in R.
+
+`sf` is a relatively new package. There have been several textbooks introducing how to handle spatial data using  `sp` class in R and `rgdal` package. `sf` criticizes these classic implementations as incomplete, and [aims to succeed them](https://r-spatial.github.io/sf/articles/sf1.html). Thus, we use `sf` package in this tutorial.
+
+Drawing of the map in R can be done in `ggplot2`, using its `geom_sf()` designed for simple features. 
 
 ### Python{-}
 
@@ -175,11 +183,7 @@ We will use the `gamp` procedure in Map library in this tutorial. Unfortunately,
 
 ### R{-}
 
-*will insert explanation of `sf` package*
-
-We can create a `sf` object by loading a shapefile using `read_sf`.
-
-`read_sf` is an alias for `st_read`. `read_sf` returns a tibble rather than data.frame.
+In R, you can read shapefiles by `st_read()` or `read_sf()` function of `sf` package. `st_read()` returns a `data.frame`, whereas `read_sf` is an alias for `st_read` and returns a `tibble`. In this tutorial, we use `tibble`.
 
 ```{r read_shapefile_R}
 # read shapefile
@@ -187,7 +191,9 @@ filename = "./maps/cb_2018_us_state_500k.shp"
 sf_us = read_sf(filename)
 ```
 
-We can see the resulting object is a tibble. Therefore, operations such as deleting certain states from the map can be easily performed using `dplyr`. We can also check what kind of CRS this object is using from this output.
+By printing the resulting object, we can see it's a tibble with a column `geometry` storing geographic vector data. Thus, operations such as deleting certain states from the map can be easily performed using `dplyr`.
+
+We can also check what kind of CRS this object is using (`NAD83`), and the limits of latitude and longitude contained in this data from this output.
 
 ```{r show_sf_tibble_R, message=FALSE}
 head(sf_us, 5)
@@ -217,20 +223,21 @@ run;
 
 You can easily draw state boundaries recorded as multi polygons in the `geometry` column by passing `sf` objects to `ggplot2`.
 
-*will insert explanation of ggplot2 and `geom_sf()`, `coord_sf(xlim, ylim)`*
+`ggplot2` has a geom called `geom_sf()`, which can be used to draw points, lines, or polygons stored as simple features. `coord_sf()` controls CRS options and can be used with `geom_sf()`. Here, we set the minimum and maximum values of latitude and longitude in `xlim=` and `ylim=` options for a demonstration.
 
 ```{r draw_us_whole_R, cache=TRUE, fig.height=5}
 sf_us %>% 
   ggplot() +
   geom_sf() +
-  coord_sf(xlim = c(-180, 180), ylim = c(-90, 90)) +
-  theme_bw()
+  coord_sf(xlim = c(-180, 180), ylim = c(-90, 90)) + # whole world
+  theme_bw() # suppress background color
 ```
 
-The Census Bureau's shapefiles also include coordinates for Alaska, Hawaii, or other distant territories, so they are not displayed at the scale we desire. The easiest solution is to drop the rows that contain these off-mainland states and territories.
+The Census Bureau's shapefiles also include coordinates for Alaska, Hawaii, or other distant territories, so they will not be displayed at the scale we desire, because they are widely scattered across the globe. The easiest solution is to drop the rows that contain these off-mainland states and territories. We can use functions of `dplyr`, such as `filter()`, as with a normal tibble.
 
 ```{r draw_us_dropped_R, cache=TRUE, fig.height=5}
 sf_us %>% 
+  # drop off-mainland states and territories
   filter( !(NAME %in% c("Alaska",
                         "Hawaii",
                         "Puerto Rico",
@@ -244,7 +251,7 @@ sf_us %>%
   theme_bw()
 ```
 
-However, we want to include Alaska and Hawaii because our purpose is to make a state-by-state comparison. For practical purposes, scaled Alaska and Hawaii are typically shown as annotations under southern California. This can be accomplished manually by scaling and shifting the original objects. We take out only Alaska and Hawaii, apply an affine transformation to scale and shift them, and then put them back into the original tibble.
+However, we want to include Alaska and Hawaii because our goal is to make a state-by-state comparison. For practical purposes, scaled Alaska and Hawaii are typically shown as annotations under southern California. This can be accomplished manually by scaling and shifting the original objects. We take out only Alaska and Hawaii, apply a transformation to scale and shift them, and then put them back into the original tibble.
 
 But before that, since Alaska is on the date line and divided into two pieces as mentioned above, we shift all coordinates of the United States below 0 (-180-0 degree in longitude) to 180-360 degrees. This can be achieved by applying `st_shift_longitude()` to `geometry` column of `sf` objects.
 
@@ -256,14 +263,13 @@ sf_us_360 = sf_us %>%
                         "United States Virgin Islands",
                         "Commonwealth of the Northern Mariana Islands",
                         "American Samoa")) ) %>% 
+  # shift coordinates below 0
   mutate(geometry = st_shift_longitude(geometry))
 ```
 
-*will insert explanation of affine transformation of geometries*
+The object can be moved by adding or subtracting certain latitude and longitude values to the `geometry` column, or it can be scaled down or up by multiplying the `geometry` column by some factor. This operation can be thought of as an affine transformation $f(x) = Ax + b$ of the coordinates contained in the `geometry` column. We can even rotate geographic objects by using a trigonometric function in matrix A.
 
-$$
-f(x) = xA + b
-$$
+If we simply multiply the coordinates of Alaska and Hawaii by a constant, then the scaling happens around the origin and Alaska and Hawaii move to an unpredictable place on the earth. To ensure that scaling and shifting occurs around the original locations of Alaska and Hawaii, we created the following function `affine_trans()`. This function subtracts the centroid before the transformation, so that the transformation occurs around their centroids.
 
 ```{r affine_func}
 affine_trans = function(sf_obj, scale, shift_lon_lat) {
@@ -296,21 +302,23 @@ sf_us_shifted = sf_us_360 %>%
   bind_rows(alaska, hawaii)
 ```
 
-*Insert explanation of `coord_sf()` and `crs` argument*
+After these operations, we have a map of the United States on the scale we desire.
+
+`coord_sf()` can also be used to specify which projection method to use when creating a map in `ggplot2`. Here we demonstrate the two Projected CRSs introduced at the beginning of this tutorial. We only need to pass the desired `proj.4` string as an argument.
 
 ```{r draw_us_transformed_R, cache=TRUE, fig.height=5}
 # Mercator Projection
 mercator = sf_us_shifted %>% 
   ggplot() +
   geom_sf() +
-  coord_sf(crs = "+proj=merc") +
+  coord_sf(crs = "+proj=merc") + # proj.4 string for mercator
   theme_bw() +
   ggtitle("Mercator Projection")
 # Equal Area Projection
 equal_area = sf_us_shifted %>% 
   ggplot() +
   geom_sf() +
-  coord_sf(crs = "+proj=aea +lat_1=25 +lat_2=50 +lon_0=-100") +
+  coord_sf(crs = "+proj=aea +lat_1=25 +lat_2=50 +lon_0=-100") + # equal area
   theme_bw() +
   ggtitle("Equal Area Projection")
 
@@ -368,10 +376,13 @@ library(lubridate) # Aggregation by Datetime
 ### R{-}
 
 ```{r prepare_data_R, message=FALSE}
-# Download up-to-date .csv
-df_covid = read_csv(
-  url("https://covidtracking.com/data/download/all-states-history.csv")
-  )
+# If you want to download up-to-date .csv
+# df_covid = read_csv(
+#   url("https://covidtracking.com/data/download/all-states-history.csv")
+#   )
+
+# In this tutorial, data is as of 2020/11/11
+df_covid = read_csv("./covid_fix_date/20201111-all-states-history.csv")
 
 # Select variables and delete territories
 df_covid = df_covid %>% 
