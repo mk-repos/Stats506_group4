@@ -766,8 +766,9 @@ proc transpose data=work.case_data_byq out=wide_case_data_byq prefix=quarter;
 run;
 ```
 
-The final value data you got should have distinct records which the key variables you matched with shapefile should be the primary keys for your value data. 
+The final value data you got should have distinct records which the key variables you matched with shapefile should be the primary keys for your value data. And your final value data should look like:
 
+![***Table:first 10 observations of Value Data***](SAS_document/wide_case_data.png)
 
 
 # Generate Choropleth Maps
@@ -947,6 +948,8 @@ draw_map_quarter(sf_merge, "2020.4",max_positive)
 
 ### SAS {.tabset .tabset-pills}
 
+Now, we have everything we need to draw choropleth map. And the results are shown below including code to access it. But as you can see from the below results, the colormap for each choropleth map is the same which is hard for us to compare across the quarters. In the extended example, we gonna show how to set up the color attributes for our choropleth map so we can compare across the quarter.
+
 #### First Quarter{-}
 
 ```{r eval = FALSE}
@@ -958,7 +961,7 @@ proc gmap
 run;
 ```
 
-![](SAS_document/Q1.png)
+![***Figure: Total count of COVID-19 positives in each state, first quarter of 2020***](SAS_document/Q1.png)
 
 
 #### Second Quarter{-}
@@ -972,7 +975,7 @@ proc gmap
 run;
 ```
 
-![](SAS_document/Q2.png)
+![***Figure: Total count of COVID-19 positives in each state, second quarter of 2020***](SAS_document/Q2.png)
 
 #### Third Quarter{-}
 
@@ -985,7 +988,7 @@ proc gmap
 run;
 ```
 
-![](SAS_document/Q3.png)
+![***Figure: Total count of COVID-19 positives in each state, third quarter of 2020***](SAS_document/Q3.png)
 
 
 #### Fourth Quarter{-}
@@ -999,7 +1002,7 @@ proc gmap
 run;
 ```
 
-![](SAS_document/Q4.png)
+![***Figure: Total count of COVID-19 positives in each state, fourth quarter of 2020***](SAS_document/Q4.png)
 
 
 # Extended Example: Interactive Choropleth Maps
