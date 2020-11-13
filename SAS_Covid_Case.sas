@@ -34,6 +34,17 @@ proc transpose data=work.case_data_byq out=wide_case_data_byq prefix=quarter;
     var total_pos;
 run;
 
+options printerpath=(png out);
+filename out 'c:\Users\zhaoleo\GitHub_Folder\Stats506_group4\SAS_document\wide_case_data.png';
+ods listing close;
+ods printer;
+title "Value Data";
+proc print data = work.wide_case_data_byq;
+run;
+ods printer close;
+ods listing close;
+
+
 /*import the shape file*/
 PROC MAPIMPORT datafile = "C:\Users\zhaoleo\GitHub_Folder\Stats506_group4\maps\cb_2018_us_state_500k.shp"
 out = USmap;
