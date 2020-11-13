@@ -403,6 +403,7 @@ We can easily draw state boundaries recorded as multi polygons in the `geometry`
 
 ```{python, python.reticulate=FALSE, eval=FALSE}
 sf_us.plot()
+plt.savefig('./python_files/whole_map_python.png')
 plt.show()
 ```
 
@@ -419,6 +420,7 @@ dropstates = ["Alaska",
               "Commonwealth of the Northern Mariana Islands",
               "American Samoa"]
 sf_us.query('NAME not in @dropstates').plot()
+plt.savefig('./python_files/dropped_map_python.png')
 plt.show()
 ```
 
@@ -482,6 +484,7 @@ ax1.axis('off')
 sf_us_shifted.to_crs("+proj=aea +lat_1=25 +lat_2=50 +lon_0=-100").plot(ax=ax2)
 ax2.set_title("Equal Area Projection")
 ax2.axis('off')
+plt.savefig('./python_files/transformed_map_python.png')
 plt.show()
 ```
 
@@ -492,6 +495,7 @@ The final map we will use in the later sections is the one with Alaska and Hawai
 ```{python, python.reticulate=FALSE, eval=FALSE}
 sf_us_shifted.to_crs("+proj=merc").plot(color="white", edgecolor='black')
 plt.axis('off')
+plt.savefig('./python_files/final_map_python.png')
 plt.show()
 ```
 
@@ -542,6 +546,10 @@ library(lubridate) # Aggregation by Datetime
 In order to make it easier to aggregate this daily count data on a quarterly basis, we use `lubridate` package.
 
 ### Python{-}
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+import pandas as pd # Data handling
+```
 
 ## Merge COVID-19 Count with Geographic Data {.tabset}
 
@@ -604,6 +612,55 @@ sf_merged %>%
 ```
 
 ### Python{-}
+
+let's read the data we downloaded from the [website]("https://covidtracking.com/data/download/all-states-history.csv"). We have already downloaded the data and stored it into the `covid_fix_date` folder. And we will directly use that for this tutorial. 
+
+Using "pandas" packages, we can easily handle the data.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+# read data
+all_data=pd.read_csv("./covid_fix_date/20201111-all-states-history.csv")
+
+# Select variables
+df_covid=all_data[['date','state','positiveIncrease']]
+
+# delete territories
+df_covid=df_covid[~df_covid['state'].isin(["AS", "GU", "MP", "PR", "VI"])]
+df_covid["date"]=pd.to_datetime(df_covid["date"])
+```
+
+We use "groupby" and "resample" function wo get quarter data.Then we rename the data for each quarter.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+# Aggregate by State and Quarter
+df_covid1=df_covid.set_index('date')
+df_state_q= df_covid1.groupby('state')['positiveIncrease']\
+            .resample("Q").sum().unstack()
+df_state_q.reset_index(inplace=True)
+
+# rename columns
+df_state_q.columns=['state','2020.1','2020.2','2020.3','2020.4']
+sf_us_shifted.rename(columns={"STUSPS":"state"},inplace=True)
+```
+
+We record the maximum number of new infections per quarter here, which we will use later for our maps.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+# Store maximum value for consistent plots for all quarters
+max_positive = pd.DataFrame(df_state_q.max()).drop(['state'],axis=0)\
+                                              .astype('int').max()
+```
+
+We merge positiveIncrease data with map data and select columns we use.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+# Merge with sf object
+sf_merge=pd.merge(sf_us_shifted,df_state_q)
+
+# only left related columns
+sf_merge=sf_merge.iloc[:,[4,5,9,10,11,12,13]]
+sf_merge.head()
+```
 
 ### SAS{-}
 
@@ -674,6 +731,12 @@ library(scales) # determine breaks and labels for graphics
 Although we don't necessarily need additional packages in this section, we use the `scales` package from the `tidyverse` family to improve the aesthetics of graphs, such as adding commas to large numbers inside `ggplot2`.
 
 ### Python{-}
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+import pandas as pd # Data handling
+import geopandas as geopd # Handling shapefile
+import matplotlib.pyplot as plt # Generating plots
+```
 
 ## Show Choropleth Maps for each Quarter in 2020 {.tabset}
 
@@ -761,6 +824,72 @@ draw_map_quarter(sf_merged, "2020.4", max_positive) +
 
 ### Python{-}
 
+```{python, python.reticulate=FALSE, eval=FALSE}
+import pandas as pd # Data handling
+import geopandas as geopd # Handling shapefile
+import matplotlib.pyplot as plt # Generating plots
+```
+
+In order to display the choropleth maps for each quarter with the exactly same design, we created the following function.
+The 'draw_map_quarter()' has three parameters,"sf_obj" is dataframe that contains all information; "target_q" is the target quarter we want to plot; "maxlim" is the largest positive increasing number among all quarters(Fixing this, we can easily distinguish the size of positive increasing numbers by color changes.
+
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+# define function to plot and save figures
+def draw_map_quarter(sf_obj, target_q,maxlim):
+    fig, ax = plt.subplots(figsize=(20, 10))
+    sf_obj.to_crs("+proj=merc").plot(column=target_q, cmap='Reds',ax=ax, 
+                                    legend=True,edgecolor='w',
+                                    legend_kwds={'label': 'Counts'},
+                                    vmin=0, vmax=maxlim)
+    # set title
+    plt.title(str(target_q[0:4])+"Q"+str(target_q[-1]) +
+                  "- Total COVID-19 Cases",
+              fontsize=15)
+    # Hide axis
+    plt.gca().xaxis.set_major_locator(plt.NullLocator())
+    plt.gca().yaxis.set_major_locator(plt.NullLocator())
+    plt.axis('off')
+    name=str(target_q[0:4])+"Q"+str(target_q[-1])+'.png'
+    plt.savefig("./python_files/{}".format(name))
+    plt.show()
+    return
+```
+
+#### First Quarter{-}
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+draw_map_quarter(sf_merge, "2020.1",max_positive)
+```
+
+![***Figure: View of the raw shapefile at the state level provided by the Census Bureau***](./python_files/2020Q1.png)
+
+
+#### Second Quarter{-}
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+draw_map_quarter(sf_merge, "2020.2",max_positive)
+```
+
+![***Figure: View of the raw shapefile at the state level provided by the Census Bureau***](./python_files/2020Q2.png)
+
+#### Third Quarter{-}
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+draw_map_quarter(sf_merge, "2020.3",max_positive)
+```
+
+![***Figure: View of the raw shapefile at the state level provided by the Census Bureau***](./python_files/2020Q3.png)
+
+#### Fourth Quarter{-}
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+draw_map_quarter(sf_merge, "2020.4",max_positive)
+```
+
+![***Figure: View of the raw shapefile at the state level provided by the Census Bureau***](./python_files/2020Q4.png)
+
+
 ### SAS {.tabset}
 
 #### First Quarter{-}
@@ -836,6 +965,16 @@ library(plotly) # Draw interactive maps with `ggplot2`
 [Plotly](https://plotly.com/) is a library for creating animated and interactive graphs, which can be used in R, Python, and other languages. It provides a function `ggplotly()` to easily give existing ggplot objects an interactive structure.
 
 ### Python{-}
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+import pandas as pd # Data handling
+import geopandas as geopd # Handling shapefile
+import plotly.express as px # Generating plots
+import plotly.graph_objects as go
+# import plotly_express as px
+import json 
+import plotly.express as px
+```
 
 ## Generate Interactive/Animated Choropleth Map {.tabset}
 
@@ -942,6 +1081,47 @@ p %>%
 ```
 
 ### Python{-}
+
+Using the same data set used for the quarterly aggregation, we now aggregate this on a monthly basis.
+The following work is nearly same as above.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+# Aggregate by State and Month
+df_covid2=df_covid.set_index('date')
+df_state_m= df_covid2.groupby('state')['positiveIncrease']\
+            .resample("M").sum().unstack()
+df_state_m.reset_index(inplace=True)
+col_name=list(df_state_m.columns[1:].map(lambda x: x.strftime('%Y-%m')))
+col_name=['state',col_name]
+
+# Unlock the nesting level of col_name and assign it to the new column name
+df_state_m.columns= eval('[%s]'%repr(col_name)\
+                    .replace('[', '').replace(']', ''))
+df_state_m=df_state_m.fillna(0)
+```
+
+But we have to transform wide table to long table for plotting.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+# transfrom wide table to long table
+df_state_m=df_state_m.melt(
+    id_vars=["state"],
+    var_name="Month",
+    value_name="total_pos"
+)
+```
+
+Then we merge map data and positive incteasing data and left the columns we need.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+# Merge with sf object
+sf_merge_m=pd.merge(sf_us_shifted,df_state_m)
+
+# only left related columns
+sf_merge_m = sf_merge_m.iloc[:, [10, 4, 5, 9, -1]]
+sf_merge_m.head()
+```
+
 
 # Extended Example: Colored Cholopleth map in SAS
 
