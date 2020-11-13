@@ -811,3 +811,19 @@ fig
 ```
 
 ### Python{-}
+
+# Conclusion
+
+Our example showed choropleth maps that used a shapefile to draw a map of the United States and project the number of people infected with COVID-19 onto the map. Since shapefile is a universal geographic data format, we could draw identical maps in R, Python, or SAS.
+
+R and Python have a comprehensive library (`sf` in R, `geopandas` in Python) for handling geographic information that allows us to not only read shapefiles, but also to edit and create new simple feature objects by rotating, moving, and/or scaling geographic objects. Thanks to these integrated libraries, we were able to move and scale Alaska and Hawaii relatively easily, both in R and in Python.
+
+SAS was also able to reproduce the core example of reading a shapefile and displaying choropleth maps using the tools included in the graphics library `SAS/GRAPH`. However, in some cases, we could not find functionality comparable to that of R or Python. In particular, beyond the display and projection of GIS data, we could not find a procedure in SAS to create new geographic objects (i.e., changing and updating the coordinates of existing shapefile, affine transformation on Alaska/Hawaii, etc.). This contrasts with the fact that R and Python even allow us to create a completely original shapefile.
+
+This is a natural difference considering that Python and R are more like comprehensive programming languages, whereas SAS is primarily for data analysis.
+
+This difference may become a reason to prioritize R and Python in some situations. For example, in countries with many remote islands, it is often not possible to display the entire country without major modifications to existing coordinates. In such cases, R and Python would be preferable for flexibility and generalizability. However, SAS would also suffice to analyze countries and regions where shapefiles that are already optimized for display are available, like the United States. In fact, SAS has a built-in map of the United States.
+
+Another major difference is that R and Python can create interactive reports using HTML, CSS, and Javascript. Our extended examples showed interactive maps in R and Python and successfully visualized the temporal trends in the number of COVID-19 infections. Spatial data can often provide insights when observed in conjunction with trends over time. In our extended example, we could clearly observe which areas were experiencing peak COVID-19 outbreaks at which time of year. Spatio-temporal visualizations have a wide range of applications, including weather, traffic accidents, and crime rates over regions and time.
+
+Shapefiles are available in various resolutions, including countries, counties, zip codes, electoral districts, and census tracts. If the user learns to display shapefiles and project data onto a map from this tutorial, the extent of the possible analyses will be greatly expanded.
