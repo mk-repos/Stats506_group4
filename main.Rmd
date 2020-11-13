@@ -118,9 +118,9 @@ However, without some transformation, latitude and longitude cannot be displayed
 
 ## Understanding Geographic Coodinate System
 
-There are not many things you have to worry about when drawing a map because the software will take care of most of the tedious works. However it should be noted that geographic coordinate systems are actually quite complex, and it's important to understand how it works because, as we'll see in this tutorial, sometimes you'll need to transform the coordinates.
+There are not many things you have to worry about when drawing a map because the software will take care of most of the tedious works. However it should be noted that geographic coordinate systems are actually quite complex, and it's important to understand basics because, as we'll see in this tutorial, sometimes you'll need to transform the coordinates.
 
-Since the Earth is not exactly round, the values of latitude and longitude vary slightly depending on how you approximate the Earth's surface and what point on the Earth you use as a reference point. Thus, there are several different ***Coordinate Reference Systems (CRSs)*** available in the world. They approximate the Earth's surface somehow and define the relationship between the geographic objects and the surface of the Earth. Since you cannot join multiple `shapefile` that are based on different CRSs, you should check what CRS your shapefile is based on and transform them if needed.
+Since the Earth is not exactly round, the values of latitude and longitude vary slightly depending on how we approximate the Earth's surface and what point on the Earth we use as a reference point. Thus, there are several different ***Coordinate Reference Systems (CRSs)*** available in the world. They approximate the Earth's surface somehow and define the relationship between the geographic objects and the surface of the Earth. Since we cannot join multiple `shapefile` that are based on different CRSs, we should check what CRS our shapefile is based on and transform them if needed.
 
 In addition to the problem of defining coordinates on the Earth's surface, there is another problem of how to represent an object on the Earth's surface on a flat plane. The coordinates defined by angles (i.e., longitude and latitude) cannot be transformed into Cartesian coordinates without some distortion.
 
@@ -145,6 +145,8 @@ To refer to a CRS, there are two popular formats: the [`EPSG`](https://epsg.io/)
 
 The advantage of the `proj.4` notation is that the user can add options to this string. For example, `+lat_0=` sets the latitude of origin, and `+lon_wrap=` sets the longitude to use for wrapping, which determines the left and right edge of the Earth.
 
+Once you know what CRS the shapefile is based on, you can easily find a notation for each format by searching for the name of that CRS on the [`EPSG`](https://epsg.io/) website.
+
 ## "Edge Case": Object on the International Date Line
 
 Another small issue is that although the boundaries are actually continuous on the Earth's surface, some countries are divided by the International Date Line. For example, a part of Alaska exists exactly on the International Date Line. As a result, Alaska is typically shown separately on the western-most and eastern-most sides of the world map.
@@ -153,7 +155,7 @@ Different software has different ways of dealing with this, but it is sometimes 
 
 # Prepare Geographic Vector Data to Display
 
-The US Census Bureau provides free cartographic boundary data at the national, state, county, zip code and other levels. For this tutorial, we used the following state-level boundary data:
+The US Census Bureau provides [free cartographic boundary data](https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html) at the national, state, county, zip code and other levels. For this tutorial, we used the following state-level boundary data:
 
  - `cb_2018_us_state_500k.zip`
 
@@ -811,3 +813,19 @@ fig
 ```
 
 ### Python{-}
+
+# Conclusion
+
+Our example showed choropleth maps that used a shapefile to draw a map of the United States and project the number of people infected with COVID-19 onto the map. Since shapefile is a universal geographic data format, we could draw identical maps in R, Python, or SAS.
+
+R and Python have a comprehensive library (`sf` in R, `geopandas` in Python) for handling geographic information that allows us to not only read shapefiles, but also to edit and create new simple feature objects by rotating, moving, and/or scaling geographic objects. Thanks to these integrated libraries, we were able to move and scale Alaska and Hawaii relatively easily, both in R and in Python.
+
+SAS was also able to reproduce the core example of reading a shapefile and displaying choropleth maps using the tools included in the graphics library `SAS/GRAPH`. However, in some cases, we could not find functionality comparable to that of R or Python. In particular, beyond the display and projection of GIS data, we could not find a procedure in SAS to create new geographic objects (i.e., changing and updating the coordinates of existing shapefile, affine transformation on Alaska/Hawaii, etc.). This contrasts with the fact that R and Python even allow us to create a completely original shapefile.
+
+This is a natural difference considering that Python and R are more like comprehensive programming languages, whereas SAS is primarily for data analysis.
+
+This difference may become a reason to prioritize R and Python in some situations. For example, in countries with many remote islands, it is often not possible to display the entire country without major modifications to existing coordinates. In such cases, R and Python would be preferable for flexibility and generalizability. However, SAS would also suffice to analyze countries and regions where shapefiles that are already optimized for display are available, like the United States. In fact, SAS has a built-in map of the United States.
+
+Another major difference is that R and Python can create interactive reports using HTML, CSS, and Javascript. Our extended examples showed interactive maps in R and Python and successfully visualized the temporal trends in the number of COVID-19 infections. Spatial data can often provide insights when observed in conjunction with trends over time. In our extended example, we could clearly observe which areas were experiencing peak COVID-19 outbreaks at which time of year. Spatio-temporal visualizations have a wide range of applications, including weather, traffic accidents, and crime rates over regions and time.
+
+Shapefiles are available in various resolutions, including countries, counties, zip codes, electoral districts, and census tracts. If the user learns to display shapefiles and project data onto a map from this tutorial, the extent of the possible analyses will be greatly expanded.
