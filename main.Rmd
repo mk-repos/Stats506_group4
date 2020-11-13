@@ -822,7 +822,7 @@ draw_map_quarter(sf_merged, "2020.4", max_positive) +
   ggtitle("2020 Q4 - Total COVID-19 Cases")
 ```
 
-### Python{-}
+### Python {.tabset}
 
 ```{python, python.reticulate=FALSE, eval=FALSE}
 import pandas as pd # Data handling
@@ -862,7 +862,7 @@ def draw_map_quarter(sf_obj, target_q,maxlim):
 draw_map_quarter(sf_merge, "2020.1",max_positive)
 ```
 
-![***Figure: View of the raw shapefile at the state level provided by the Census Bureau***](./python_files/2020Q1.png)
+![***Figure: Total count of COVID-19 positives in each state, first quarter of 2020***](./python_files/2020Q1.png)
 
 
 #### Second Quarter{-}
@@ -871,7 +871,7 @@ draw_map_quarter(sf_merge, "2020.1",max_positive)
 draw_map_quarter(sf_merge, "2020.2",max_positive)
 ```
 
-![***Figure: View of the raw shapefile at the state level provided by the Census Bureau***](./python_files/2020Q2.png)
+![***Figure: Total count of COVID-19 positives in each state, second quarter of 2020***](./python_files/2020Q2.png)
 
 #### Third Quarter{-}
 
@@ -879,7 +879,7 @@ draw_map_quarter(sf_merge, "2020.2",max_positive)
 draw_map_quarter(sf_merge, "2020.3",max_positive)
 ```
 
-![***Figure: View of the raw shapefile at the state level provided by the Census Bureau***](./python_files/2020Q3.png)
+![***Figure: Total count of COVID-19 positives in each state, third quarter of 2020***](./python_files/2020Q3.png)
 
 #### Fourth Quarter{-}
 
@@ -887,7 +887,7 @@ draw_map_quarter(sf_merge, "2020.3",max_positive)
 draw_map_quarter(sf_merge, "2020.4",max_positive)
 ```
 
-![***Figure: View of the raw shapefile at the state level provided by the Census Bureau***](./python_files/2020Q4.png)
+![***Figure: Total count of COVID-19 positives in each state, fourth quarter of 2020***](./python_files/2020Q4.png)
 
 
 ### SAS {.tabset}
@@ -1121,6 +1121,57 @@ sf_merge_m=pd.merge(sf_us_shifted,df_state_m)
 sf_merge_m = sf_merge_m.iloc[:, [10, 4, 5, 9, -1]]
 sf_merge_m.head()
 ```
+
+January and February 2020 will not shown on this interactive map because positive cases did not exist in almost all states. So, drop January and February data.
+
+```{python, python.reticulate=FALSE, eval=FALSE}
+sf_merge_m_03_11 = sf_merge_m.query('Month != "2020-01" & Month != "2020-02"')
+```
+
+Then set figure colors and other parameters and drow pictures and save.
+```{python, python.reticulate=FALSE, eval=FALSE}
+config = {
+    'displaylogo': False,
+    'editable': True,
+    'responsive': False,
+    'displayModeBar': False
+}
+# set figure colors
+colors = [
+    [0, 'white'],
+    [0.002, 'rgb(255,247,236)'],
+    [0.02, 'rgb(253,212,158)'],
+    [0.1, 'rgb(252,141,89)'],
+    [0.2, 'rgb(215,48,31)'],
+    [1, 'rgb(127,0,0)']
+]
+fig = px.choropleth(sf_merge_m_03_11, locations="state",
+                    locationmode = "USA-states",
+                    color="total_pos",scope="usa",
+                    hover_name="NAME", animation_frame="Month",
+                    color_continuous_scale=colors,
+                    range_color=[0, 300000],
+                    labels={'total_pos':'Counts'},
+                    width=800,
+                    height=480)
+# set title
+fig.update_layout( title_text = 'USA Monthly COVID-19 Cases',
+                   title_x = 0.5, geo=dict( showframe = False,
+                                            showcoastlines = False, ))
+# save as html                                            
+fig.write_html('Monthly_case.html', config=config)
+```
+
+
+
+
+```{r, echo=FALSE, cache=TRUE, fig.cap=cap}
+cap = paste0("***Figure: Interactive choropleth map of total count of",
+             " COVID-19 positives per month in each state***")
+htmltools::includeHTML("./python_files/Monthly_case.html")
+```
+
+![***Figure: Interactive choropleth map of total count of COVID-19 positives per month in each state***](./python_files/Monthly_case.html)
 
 
 # Extended Example: Colored Cholopleth map in SAS
