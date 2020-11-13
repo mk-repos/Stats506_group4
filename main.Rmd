@@ -758,28 +758,32 @@ sf_merged_month %>%
   kable_paper("hover", full_width = TRUE)
 ```
 
-[Plotly](https://plotly.com/r/) in R creates web widgets that can be interactively manipulated by users using HTML, CSS, and Javascript. It can be embedded in Rmarkdown's HTML output, or used in shiny web applications. Not only can the Choropleth Map be interactive, but also the usual histograms and scattergrams can be made interactive.
+[Plotly](https://plotly.com/r/) in R creates web widgets that can be interactively manipulated by users using HTML, CSS, and Javascript. It can be embedded in Rmarkdown's HTML output or used in shiny web applications. In addition to choropleth maps, any plots such as histograms and scattergrams can be made interactive.
 
-`ggplotly()` from `plotly` library converts a ggplot object into a plotly object. This will allow us to convert existing maps into interactive maps.
+`ggplotly()` from `plotly` library converts a ggplot object into a plotly object. This will allow us to convert existing maps into interactive maps. The nice thing about `ggplotly()` is that we can use most of the familiar ggplot options as they are.
 
-We use `frames` to create an interactive map that allows the user to change the month displayed. `frames` refers to a list of figures. Just as in regular animations, by switching these frames and displaying multiple figures in succession, we can create an animation effect where the months seem to be changing. In addition, by creating a slider to control the transition of the frames, users can move the slider to display the specific month (specific frame) they want to see. We can control animations and interactive sliders using functions from `plotly` library such as `animation_opts()` and `animation_slider()`.
+We use *frames* in `plotly` to create an interactive map. *frames* refers to a list of figures. Just like regular animations, by switching frames and displaying multiple figures in succession, we can create an animation effect where the month shown in a plot seems to be changing smoothly. In addition, by creating a *slider* to control the transition of the *frames*, users can move the slider to display the specific month (specific frame) they want to see. We can control the animation effect and the slider by applying functions (such as `animation_opts()` and `animation_slider()`) from `plotly` library on a `ggplot` object.
 
-Because we want the frames to switch per month, we set `aes(frame = month)` in `ggplot()`. You have to set it as an aesthetics in the preceding `ggplot()`, not in `geom_sf()`, to be able to render it.
+In the following code, we first create a ggplot object as usual. We need to set up some new aesthetics at this stage, but we can still use the familiar ggplot syntax.
 
-By default, in order to smoothly connect the frames, a transition animation is played. For example, if a point moves from (1,1) to (2,2) between frames, it looks as if the point gradually moves. On a map, it is not desirable for the boundaries of a state to vibrate, so we set `transition = 0` inside `animation_opts()` options to disable transition animations. The `redraw=` option controls whether the entire graph is redrawn at each frame.
+When creating a ggplot object, we set `ggplot(aes(frame = month))`, because we want the frames to change each month. You have to set it as an aesthetic inside `ggplot()`, not in `geom_sf()`.
 
-By setting `hide = TRUE` in `animation_slider()` option, it is also possible to hide the slider for users to control.
+`theme()` options are the same as in the previous example. The range of values in the color bars is automatically adjusted by `plotly` to be the same for all months, so there is no need to set a maximum value.
 
-Inside `geom_sf()`, we can create a new aesthetics, `text=`. The string specified here can be displayed when the users locate their mouse cursor on the graph. Here, we want to display a string "*Positives in [STATE NAME] (newline) [# of CASES]*" for each state. Once you create a text, it should be mentioned inside `ggplotly(tooltip = c("text"))` call. `tooltip=` option controls which aesthetics to display in your `Plotly` graph. By doing this, when users mouse over a state, the number of new infections for that state in that month is shown in a hover view.
+Inside `geom_sf()`, we can create a new aesthetics, `text=`. The string specified here can be displayed when the users mouse over a state. Here, we want to display a string "*Positives in [State] [Number]*" for each state. Once we create a text inside `geom_sf(text="")`, it should be mentioned later inside `ggplotly(tooltip = c("text"))` call. `tooltip=` option controls which aesthetics to display on the interactive graph.
 
-The nice thing about `ggplotly` is that we can use most of the familiar ggplot options as they are. `theme()` options are the same as in the above quarterly example. The range of values in the color bars is automatically adjusted by `plotly` to be the same for all months, so there is no need to set a maximum value.
+Once we have a `ggplot` object ready, we just need to pass it to the `ggplotly()` function. We can add options such as `animation_opt()` by using pipes `%>%`.
 
-January and February 2020 are not shown on this interactive map because positive cases did not exist in almost all states.
+By default, in order to smoothly connect the frames, a transition animation is added. For example, if a point moves from (1,1) to (2,2) between frames, it will be shown as if the point gradually moves. On a map, it is not desirable for the boundaries to vibrate or move, so we set `animation_opts(transition = 0)` to disable transition animations. The `redraw=` option controls whether the entire graph is redrawn at each frame.
+
+By setting `animation_slider(hide = TRUE)` option, it is also possible to hide the slider, although we keep it displayed in our example.
+
+Note that January and February 2020 are not shown on this interactive map because positive cases did not exist in almost all states.
 
 ```{r plotly_R, warning=FALSE, cache=TRUE, fig.cap=cap}
 cap = paste0("***Figure: Interactive choropleth map of total count of",
              " COVID-19 positives per month in each state***")
-# First create a ggplot object just like before
+# create a ggplot object just like before, but with `frame` and `text` aes
 p = sf_merged_month %>%
   filter(month != "2020-02" & month != "2020-01") %>%
   ggplot(aes(frame = month)) +
@@ -808,10 +812,12 @@ p = sf_merged_month %>%
   labs(fill = "Counts")
 
 # Add a slider to change a month to display
-fig = ggplotly(p, tooltip = c("text")) %>% 
-  animation_opts(transition = 0, redraw = TRUE) %>% 
+p %>% 
+  ggplotly(tooltip = c("text")) %>% 
+  # disable transition animation
+  animation_opts(transition = 0, redraw = TRUE) %>%
+  # slider will be shown by default, so this line is just for a demonstration
   animation_slider(hide = FALSE)
-fig
 ```
 
 ### Python{-}
