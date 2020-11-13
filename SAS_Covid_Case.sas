@@ -35,7 +35,7 @@ proc transpose data=work.case_data_byq out=wide_case_data_byq prefix=quarter;
 run;
 
 /*import the shape file*/
-PROC MAPIMPORT datafile = "C:\Users\zhaoleo\GitHub_Folder\Stats506_group4\maps_shifted\us_shifted.shp"
+PROC MAPIMPORT datafile = "C:\Users\zhaoleo\GitHub_Folder\Stats506_group4\maps\cb_2018_us_state_500k.shp"
 out = USmap;
 run;
 
@@ -46,7 +46,7 @@ ods listing;
 title "Covid - 19 Positive Number by State: Quarter 4";
 proc gmap
 	map = Usmap
-	data = wide_case_data_byq all;
+	data = wide_case_data_byq;
 	id STUSPS;
 	choro quarter4 / name = "Q4";
 run;
@@ -59,7 +59,7 @@ ods listing;
 title "Covid - 19 Positive Number by State: Quarter 3";
 proc gmap
 	map = Usmap
-	data = wide_case_data_byq all;
+	data = wide_case_data_byq;
 	id STUSPS;
 	choro quarter3 / name = "Q3";
 run;
@@ -71,7 +71,7 @@ ods listing;
 title "Covid - 19 Positive Number by State: Quarter 2";
 proc gmap
 	map = Usmap
-	data = wide_case_data_byq all;
+	data = wide_case_data_byq;
 	id STUSPS;
 	choro quarter2 / name = "Q2";
 run;
@@ -83,7 +83,7 @@ ods listing;
 title "Covid - 19 Positive Number by State: Quarter 1";
 proc gmap
 	map = Usmap
-	data = wide_case_data_byq all;
+	data = wide_case_data_byq;
 	id STUSPS;
 	choro quarter1 / name = "Q1";
 run;
