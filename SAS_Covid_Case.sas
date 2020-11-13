@@ -22,14 +22,14 @@ positiveIncrease = positiveIncrease;
 /*calculate the positive cases for each quarter*/
 Proc sql;
 create table case_data_byq as 
-select q,state,sum(positiveIncrease) as total_pos
+select q,state as STUSPS,sum(positiveIncrease) as total_pos
 from df_state_q
 group by q,state
 order by state,q;
 
 /*get wider dataset*/
 proc transpose data=work.case_data_byq out=wide_case_data_byq prefix=quarter;
-    by state;
+    by STUSPS;
     id q;
     var total_pos;
 run;
@@ -38,8 +38,53 @@ run;
 PROC MAPIMPORT datafile = "C:\Users\zhaoleo\GitHub_Folder\Stats506_group4\maps_shifted\us_shifted.shp"
 out = USmap;
 run;
-/*make the shape file*/
-Proc SQL;
-create table shapefile_Covid as 
-select State,X,Y,quarter1,quarter2,quarter3,quarter4
-from work.USmap as a inner join work.Wide_case_data_byq as b on b.state = a.STUSPS;
+
+FILENAME plots "C:\Users\zhaoleo\GitHub_Folder\Stats506_group4\SAS_document\";
+goptions reset=all DEVICE=png ftitle="Arial/bo" GSFNAME=plots GSFMODE=REPLACE NOFILEONLY;
+ods _all_ close;
+ods listing;
+title "Covid - 19 Positive Number by State: Quarter 4";
+proc gmap
+	map = Usmap
+	data = wide_case_data_byq all;
+	id STUSPS;
+	choro quarter4 / name = "Q4";
+run;
+quit;
+
+
+goptions reset=all DEVICE=png ftitle="Arial/bo" GSFNAME=plots GSFMODE=REPLACE NOFILEONLY;
+ods _all_ close;
+ods listing;
+title "Covid - 19 Positive Number by State: Quarter 3";
+proc gmap
+	map = Usmap
+	data = wide_case_data_byq all;
+	id STUSPS;
+	choro quarter3 / name = "Q3";
+run;
+quit;
+
+goptions reset=all DEVICE=png ftitle="Arial/bo" GSFNAME=plots GSFMODE=REPLACE NOFILEONLY;
+ods _all_ close;
+ods listing;
+title "Covid - 19 Positive Number by State: Quarter 2";
+proc gmap
+	map = Usmap
+	data = wide_case_data_byq all;
+	id STUSPS;
+	choro quarter2 / name = "Q2";
+run;
+quit;
+
+goptions reset=all DEVICE=png ftitle="Arial/bo" GSFNAME=plots GSFMODE=REPLACE NOFILEONLY;
+ods _all_ close;
+ods listing;
+title "Covid - 19 Positive Number by State: Quarter 1";
+proc gmap
+	map = Usmap
+	data = wide_case_data_byq all;
+	id STUSPS;
+	choro quarter1 / name = "Q1";
+run;
+quit;
