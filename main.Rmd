@@ -18,7 +18,7 @@ library(kableExtra)
 
 A choropleth map is a very useful tool in visualizing the differences between regions. Using daily count data from Covid-19 obtained from the [COVID Tracking Project](https://covidtracking.com/), we visualize the total number of new infections in the U.S. at the state level.
 
-Furthermore, we show that choropleth maps are powerful for visualizing spatio-temporal data that evolve with time. We create examples of an interactive map for the same dataset where users can change the aggregation period. Users can see which areas were hotspots of infection at which point in time.
+Furthermore, we show that choropleth maps are powerful for visualizing spatio-temporal data that evolve with time. We create examples of an interactive map for the same dataset where users can change the aggregation period (i.e., which month to display). Users can see which areas were hotspots of infection at which point in time.
 
 Although we only use the U.S. data in this tutorial, we adopt a universal method using *shapefile* instead of using a special package made exclusively for the U.S. (such as `usmap` package in R) to ensure a consistent presentation across software tools and to allow users to apply our tutorial for visualizations in different resolutions (international, state, county, zip code, etc.) and in different situations.
 
@@ -740,7 +740,7 @@ import matplotlib.pyplot as plt # Generating plots
 
 ## Show Choropleth Maps for each Quarter in 2020 {.tabset}
 
-### R {.tabset}
+### R {.tabset .tabset-pills}
 
 In order to display the choropleth maps for each quarter with the exactly same design, we created the following function.
 
@@ -822,7 +822,7 @@ draw_map_quarter(sf_merged, "2020.4", max_positive) +
   ggtitle("2020 Q4 - Total COVID-19 Cases")
 ```
 
-### Python {.tabset}
+### Python {.tabset .tabset-pills}
 
 ```{python, python.reticulate=FALSE, eval=FALSE}
 import pandas as pd # Data handling
@@ -890,7 +890,7 @@ draw_map_quarter(sf_merge, "2020.4",max_positive)
 ![***Figure: Total count of COVID-19 positives in each state, fourth quarter of 2020***](./python_files/2020Q4.png)
 
 
-### SAS {.tabset}
+### SAS {.tabset .tabset-pills}
 
 #### First Quarter{-}
 
