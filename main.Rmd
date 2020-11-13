@@ -343,6 +343,8 @@ affine_trans = function(sf_obj, scale, shift_lon_lat) {
 }
 ```
 
+The amounts of shifts in the direction of latitude and longitude used here are values found by trial and error. It is possible to move states to any location on the Earth.
+
 ```{r affine_transform_R, warning=FALSE}
 # Extract, scale, and shift Alaska
 alaska = sf_us_360 %>%
