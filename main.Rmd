@@ -259,7 +259,7 @@ sf_us.head()
 
 ### SAS{-}
 
-We can use the `MAPIMPORT` to import the shapefile into the SAS. 
+To handle shapefiles in SAS, we will use the `MAPIMPORT` function to read the `.shp` file from the zip file we downloaded before. Run the following code in SAS and store the shapefile info into the **USmap** variable.
 
 ```{r,eval = FALSE}
 PROC MAPIMPORT datafile = "\maps\cb_2018_us_state_500k.shp"
@@ -499,6 +499,25 @@ plt.show()
 
 ### SAS{-}
 
+We will use the gmap procedure in SAS to draw the choropleth map in SAS.
+
+```{r eval = FALSE}
+proc gmap
+	map = <shape_file>
+	data = <Input Data>;
+	id <id from map>; 
+	choro <value from data>;
+run;
+```
+
+For shape file,we didn't need any further steps. We can directly use the shape file we just downloaded. But for the input data, we need to ensure the id in the input data will match any key variables in shape file. 
+
+For example, since we want to show the number of positive cases for each state, thus we want the shape file to show under state level. There are two variables related with `state name` in shape file. One is STUSPS which is abbreviation of the state name and the other is 
+<png shown print result of shape file>
+
+Based on the data you have, you need to ensure any variable in your input data will match any key variables in shape file. We will discuss more in the next section. 
+
+
 # Prepare Count Data to Display
 
 In this tutorial, we used the following variables in the state-level data.
@@ -523,8 +542,6 @@ library(lubridate) # Aggregation by Datetime
 In order to make it easier to aggregate this daily count data on a quarterly basis, we use `lubridate` package.
 
 ### Python{-}
-
-### SAS{-}
 
 ## Merge COVID-19 Count with Geographic Data {.tabset}
 
@@ -590,6 +607,57 @@ sf_merged %>%
 
 ### SAS{-}
 
+let's import the data we downloaded from the [website]("https://covidtracking.com/data/download/all-states-history.csv"). We have already downloaded the data and stored it into the `covid_fix_date` folder. And we will directly use that for this tutorial. 
+
+```{r eval = FALSE}
+/*import the data */
+proc import datafile = "\covid_fix_date\20201111-all-states-history.csv" out = UScovidRawData;
+run;
+```
+
+
+Using the `Proc SQL` procedure to filter out the necessary columns only and stored it in the working table `df_covid`. Since we want to explore the total number of cases in the main land of US, we will ignore the records for distant territories like American Samoa (Abbreviate as "AS"). 
+
+```{r eval = FALSE}
+proc SQL;
+  create table df_covid as 
+  select date, state,positiveIncrease
+  from UScovidRawData
+where state not in ("AS","GU","MP","PR","VI");
+```
+
+We want to show the total cases for each quarters by state level, so we need to create another variables `q` which stands for the quarter. Modified the working table `df_covid` and stored the results into new data `df_state_q` table. 
+```{r eval = FALSE}
+DATA df_state_q;
+set work.df_covid;
+if input(date,YYMMDD10.) >= input("2020/10/01",YYMMDD10.) then q = "4";
+else if input(date,YYMMDD10.)>= input("2020/07/01",YYMMDD10.) then q = "3";
+else if input(date,YYMMDD10.) >=  input("2020/04/01",YYMMDD10.) then q = "2";
+else if input(date,YYMMDD10.) >=  input("2020/01/01",YYMMDD10.) then q = "1";
+state = state;
+positiveIncrease = positiveIncrease;
+```
+
+```{r eval = FALSE}
+Proc sql;
+  create table case_data_byq as 
+  select q,state as STUSPS,sum(positiveIncrease) as total_pos
+  from df_state_q
+  group by q,state
+order by state,q;
+```
+```{r eval = FALSE}
+proc transpose data=work.case_data_byq out=wide_case_data_byq prefix=quarter;
+    by STUSPS;
+    id q;
+    var total_pos;
+run;
+```
+
+
+
+
+
 # Generate Choropleth Maps
 
 ## Software Requirements {.tabset}
@@ -606,8 +674,6 @@ library(scales) # determine breaks and labels for graphics
 Although we don't necessarily need additional packages in this section, we use the `scales` package from the `tidyverse` family to improve the aesthetics of graphs, such as adding commas to large numbers inside `ggplot2`.
 
 ### Python{-}
-
-### SAS{-}
 
 ## Show Choropleth Maps for each Quarter in 2020 {.tabset}
 
@@ -695,7 +761,62 @@ draw_map_quarter(sf_merged, "2020.4", max_positive) +
 
 ### Python{-}
 
-### SAS{-}
+### SAS {.tabset}
+
+#### First Quarter{-}
+
+```{r eval = FALSE}
+proc gmap
+	map = Usmap
+	data = wide_case_data_byq all;
+	id STUSPS;
+	choro quarter1;
+run;
+```
+
+![](SAS_document/Q1.png)
+
+
+#### Second Quarter{-}
+
+```{r eval = FALSE}
+proc gmap
+	map = Usmap
+	data = wide_case_data_byq all;
+	id STUSPS;
+	choro quarter2;
+run;
+```
+
+![](SAS_document/Q2.png)
+
+#### Third Quarter{-}
+
+```{r eval = FALSE}
+proc gmap
+	map = Usmap
+	data = wide_case_data_byq all;
+	id STUSPS;
+	choro quarter3;
+run;
+```
+
+![](SAS_document/Q3.png)
+
+
+#### Fourth Quarter{-}
+
+```{r eval = FALSE}
+proc gmap
+	map = Usmap
+	data = wide_case_data_byq all;
+	id STUSPS;
+	choro quarter4;
+run;
+```
+
+![](SAS_document/Q4.png)
+
 
 # Extended Example: Interactive Choropleth Maps
 
@@ -821,6 +942,8 @@ p %>%
 ```
 
 ### Python{-}
+
+# Extended Example: Colored Cholopleth map in SAS
 
 # Conclusion
 

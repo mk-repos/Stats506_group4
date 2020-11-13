@@ -23,7 +23,9 @@ This repository contains the scripts created for [Group Project, Statistics 506,
 
 ## SAS
 
- - task here
+ - Write detail instruction about the steps 
+ - extended example: owner defined color choropleth map
+ - Waiting for peer reviews
 
 # Collaboration History
  - Code reviews are mostly done through `Issue` on Github.
