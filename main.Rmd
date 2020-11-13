@@ -118,9 +118,9 @@ However, without some transformation, latitude and longitude cannot be displayed
 
 ## Understanding Geographic Coodinate System
 
-There are not many things you have to worry about when drawing a map because the software will take care of most of the tedious works. However it should be noted that geographic coordinate systems are actually quite complex, and it's important to understand how it works because, as we'll see in this tutorial, sometimes you'll need to transform the coordinates.
+There are not many things you have to worry about when drawing a map because the software will take care of most of the tedious works. However it should be noted that geographic coordinate systems are actually quite complex, and it's important to understand basics because, as we'll see in this tutorial, sometimes you'll need to transform the coordinates.
 
-Since the Earth is not exactly round, the values of latitude and longitude vary slightly depending on how you approximate the Earth's surface and what point on the Earth you use as a reference point. Thus, there are several different ***Coordinate Reference Systems (CRSs)*** available in the world. They approximate the Earth's surface somehow and define the relationship between the geographic objects and the surface of the Earth. Since you cannot join multiple `shapefile` that are based on different CRSs, you should check what CRS your shapefile is based on and transform them if needed.
+Since the Earth is not exactly round, the values of latitude and longitude vary slightly depending on how we approximate the Earth's surface and what point on the Earth we use as a reference point. Thus, there are several different ***Coordinate Reference Systems (CRSs)*** available in the world. They approximate the Earth's surface somehow and define the relationship between the geographic objects and the surface of the Earth. Since we cannot join multiple `shapefile` that are based on different CRSs, we should check what CRS our shapefile is based on and transform them if needed.
 
 In addition to the problem of defining coordinates on the Earth's surface, there is another problem of how to represent an object on the Earth's surface on a flat plane. The coordinates defined by angles (i.e., longitude and latitude) cannot be transformed into Cartesian coordinates without some distortion.
 
@@ -145,6 +145,8 @@ To refer to a CRS, there are two popular formats: the [`EPSG`](https://epsg.io/)
 
 The advantage of the `proj.4` notation is that the user can add options to this string. For example, `+lat_0=` sets the latitude of origin, and `+lon_wrap=` sets the longitude to use for wrapping, which determines the left and right edge of the Earth.
 
+Once you know what CRS the shapefile is based on, you can easily find a notation for each format by searching for the name of that CRS on the [`EPSG`](https://epsg.io/) website.
+
 ## "Edge Case": Object on the International Date Line
 
 Another small issue is that although the boundaries are actually continuous on the Earth's surface, some countries are divided by the International Date Line. For example, a part of Alaska exists exactly on the International Date Line. As a result, Alaska is typically shown separately on the western-most and eastern-most sides of the world map.
@@ -153,7 +155,7 @@ Different software has different ways of dealing with this, but it is sometimes 
 
 # Prepare Geographic Vector Data to Display
 
-The US Census Bureau provides free cartographic boundary data at the national, state, county, zip code and other levels. For this tutorial, we used the following state-level boundary data:
+The US Census Bureau provides [free cartographic boundary data](https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html) at the national, state, county, zip code and other levels. For this tutorial, we used the following state-level boundary data:
 
  - `cb_2018_us_state_500k.zip`
 
