@@ -7,7 +7,17 @@ This repository contains the scripts created for [Group Project, Statistics 506,
  - [Moeki Kurita](https://github.com/mk-repos/Stats506_public)
  - [Dongyang Zhao](https://github.com/zhaodyleo/STATS506_F20)
 
+# Tutorial
+
+`main.html` is the latest version of our tutorial. 
+
+In this tutorial, we explained how to handle shapefiles (geographic data format) in R, Python, and SAS and how to create choropleth maps that show the total number of COVID-19 positives in the U.S. per month/quarter.
+
+Because the file size of `main.html` is too large to preview on Github, **we recommend reviewers to clone this entire repository**.
+
 # To-Do List
+
+The following lists show unfinished tasks.
 
 ## Introductions (Sections 1-2) and Conclusion (Section 7)
 
