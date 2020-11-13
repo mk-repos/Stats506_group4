@@ -9,7 +9,7 @@ This repository contains the scripts created for [Group Project, Statistics 506,
 
 # Tutorial
 
-`main.html` is the latest version of our tutorial. 
+[`./main.html`](https://github.com/mk-repos/Stats506_group4/blob/main/main.html) is the latest version of our tutorial. 
 
 In this tutorial, we explained how to handle shapefiles (geographic data format) in R, Python, and SAS and how to create choropleth maps that show the total number of COVID-19 positives in the U.S. per month/quarter.
 
