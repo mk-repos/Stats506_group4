@@ -55,7 +55,7 @@ The current structure is shown below. It will likely be reorganized before final
 	 - `main.html` is the rendered version of `main.Rmd`
  - Dataset Directory
 	 - `./maps` directory stores shapefiles downloaded from the Census Bureau
-	 - `./maps_comp` directory stores compiled shapefiles(modified by website:https://mapshaper.org/). Pyhton example use this instead of original shapefiles
+	 - `./maps_comp` directory stores compiled shapefiles( modified by [website](https://mapshaper.org/)). Pyhton example use this instead of original shapefiles
 	 - `./maps_shifted` directory stores shapefiles modified by our R example. SAS example may use this instead of original shapefiles
 	 - `./covid_fix_date` stores covid data as of 2020-11-11
  - R
