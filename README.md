@@ -30,7 +30,7 @@ The following lists show unfinished tasks.
 
 ## Python
 
- - extended example:Make the map as consistent as possible with R 
+ - completed 
  - waiting for peer reviews
 
 ## SAS
