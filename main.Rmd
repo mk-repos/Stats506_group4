@@ -54,7 +54,7 @@ The following figure shows vector data of points, lines and polygons in a Cartes
 
 ```{r demonstrate_sf_points, message=FALSE, warning=FALSE, echo=FALSE, fig.height=5, fig.cap=cap}
 cap = "***Figure: Examples of displaying vector data***"
-library(tidyverse); library(ggplot2); library(ggpubr); library(sf)
+library(tidyverse); library(ggplot2); library(gridExtra); library(sf)
 # set coordinates to draw
 area_51 = c(37.234332396, -115.80666344)
 random_point = st_point(c(37.6, -115.4)) 
@@ -94,7 +94,7 @@ p4 = ggplot() +
   ggtitle("Multi Polygon")
 
 # show plots
-ggarrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
+grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
 ```
 
 Next, using Michigan as an example, we display Michigan's vector data on the Cartesian coordinate system.
@@ -168,7 +168,7 @@ We unzipped this compressed file and saved the entire contents into a subdirecto
 ```{r gis_packages_R, message=FALSE, warning=FALSE}
 library(tidyverse) # Data handling
 library(ggplot2) # Generating plots
-library(ggpubr) # Helper functions for `ggplot2` e.g. multiple plots
+library(gridExtra) # Helper functions for graphs e.g. show multiple plots
 library(sf) # handling shapefiles
 ```
 
@@ -280,7 +280,7 @@ You can easily draw state boundaries recorded as multi polygons in the `geometry
 
 `ggplot2` has a geom called `geom_sf()`, which can be used to draw points, lines, or polygons stored as simple features. `coord_sf()` controls CRS options and can be used with `geom_sf()`. Here, we set the minimum and maximum values of latitude and longitude in `xlim=` and `ylim=` options for a demonstration.
 
-```{r draw_us_whole_R, cache=TRUE, fig.height=5, fig.cap=cap}
+```{r draw_us_whole_R, cache=TRUE, fig.height=4, fig.cap=cap}
 cap = paste0("***Figure: View of the raw shapefile at the state level",
              " provided by the Census Bureau***")
 sf_us %>% 
@@ -292,7 +292,7 @@ sf_us %>%
 
 The Census Bureau's shapefiles also include coordinates for Alaska, Hawaii, or other distant territories, so they will not be displayed at the scale we desire, because they are widely scattered across the globe. The easiest solution is to drop the rows that contain these off-mainland states and territories. We can use functions of `dplyr`, such as `filter()`, as with a normal tibble.
 
-```{r draw_us_dropped_R, cache=TRUE, fig.height=5, fig.cap=cap}
+```{r draw_us_dropped_R, cache=TRUE, fig.height=4, fig.cap=cap}
 cap = paste0("***Figure: U.S. map after off-mainland states and territories",
              " dropped***")
 sf_us %>% 
@@ -367,7 +367,7 @@ After these operations, we have a map of the United States on the scale we desir
 
 `coord_sf()` can also be used to specify which projection method to use when creating a map in `ggplot2`. Here we demonstrate the two Projected CRSs introduced at the beginning of this tutorial. We only need to pass the desired `proj.4` string as an argument.
 
-```{r draw_us_transformed_R, cache=TRUE, fig.height=5, fig.cap=cap}
+```{r draw_us_transformed_R, cache=TRUE, fig.height=3, fig.cap=cap}
 cap = paste0("***Figure: U.S. map after shifting/scaling Alaska and Hawaii,",
              " using two different projection CRS***")
 # Mercator Projection
@@ -386,7 +386,7 @@ equal_area = sf_us_shifted %>%
   ggtitle("Equal Area Projection")
 
 # Show plot
-ggarrange(mercator, equal_area, ncol = 2)
+grid.arrange(mercator, equal_area, nrow = 1, ncol = 2)
 ```
 
 The final map we will use in the later sections is the one with Alaska and Hawaii, projected by Mercator CRS.
@@ -1017,7 +1017,7 @@ As extended examples, we generate an interactive map that allows users to choose
 
 ### R{-}
 
-```{r interactive_packages_R, message=FALSE}
+```{r interactive_packages_R, message=FALSE, warning=FALSE}
 # Same as the previous sections
 library(sf); library(tidyverse); library(ggplot2); library(scales)
 # New in this section
@@ -1032,6 +1032,7 @@ library(plotly) # Draw interactive maps with `ggplot2`
 import pandas as pd # Data handling
 import geopandas as geopd # Handling shapefile
 import plotly.express as px # Generating plots
+```
 
 ## Generate Interactive/Animated Choropleth Map {.tabset}
 
@@ -1251,19 +1252,11 @@ fig.update_layout( title_text = 'USA Monthly COVID-19 Cases',
 fig.write_html('./python_files/Month_case.html', config=config)
 ```
 
-
-
-
-```{r, echo=FALSE, cache=TRUE, fig.cap=cap}
-cap = paste0("***Figure: Interactive choropleth map of total count of",
-             " COVID-19 positives per month in each state***")
+```{r, echo=FALSE, cache=TRUE}
 htmltools::includeHTML("./python_files/Month_case.html")
 ```
 
-![***Figure: Interactive choropleth map of total count of COVID-19 positives per month in each state***](./python_files/Month_case.html)
-
-
-# Extended Example: Colored Cholopleth map in SAS
+***Figure: Interactive choropleth map of total count of COVID-19 positives per month in each state***
 
 # Conclusion
 
