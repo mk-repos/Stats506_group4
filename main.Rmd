@@ -884,12 +884,6 @@ draw_map_quarter(sf_merged, "2020.4", max_positive) +
 
 ### Python {.tabset .tabset-pills}
 
-```{python, python.reticulate=FALSE, eval=FALSE}
-import pandas as pd # Data handling
-import geopandas as geopd # Handling shapefile
-import matplotlib.pyplot as plt # Generating plots
-```
-
 In order to display the choropleth maps for each quarter with the exactly same design, we created the following function.
 The 'draw_map_quarter()' has three parameters,"sf_obj" is dataframe that contains all information; "target_q" is the target quarter we want to plot; "maxlim" is the largest positive increasing number among all quarters(Fixing this, we can easily distinguish the size of positive increasing numbers by color changes.
 
