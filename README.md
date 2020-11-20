@@ -62,7 +62,8 @@ The current structure is shown below. It will likely be reorganized before final
 	 - all codes are stored inside `main.Rmd`
 	 - all figures are stored in `./main_files/figure-html`
  - Python
-         - all python code are stored in `./python_code` directory
+
+	 - all python code are stored in `./python_code` directory
 	 	- `python_base.ipynb` stores codes for the core example
 	 	- `python_extend.ipynb` stores codes for the extended example
 	 - all figures are stored in `./python_files`
