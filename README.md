@@ -55,20 +55,15 @@ The current structure is shown below. It will likely be reorganized before final
 	 - `main.html` is the rendered version of `main.Rmd`
  - Dataset Directory
 	 - `./maps` directory stores shapefiles downloaded from the Census Bureau
-	 - `./maps_comp` directory stores compiled shapefiles( modified by [website](https://mapshaper.org/)). Pyhton example use this instead of original shapefiles
-	 - `./maps_shifted` directory stores shapefiles modified by our R example. SAS example may use this instead of original shapefiles
+		 - `/compiled` subdirectory stores compiled shapefiles( modified by [website](https://mapshaper.org/)). Pyhton example use this instead of original shapefiles
+		 - `/shifted` subdirectory stores shapefiles modified by our R example. SAS example may use this instead of original shapefiles
 	 - `./covid_fix_date` stores covid data as of 2020-11-11
  - R
 	 - all codes are stored inside `main.Rmd`
 	 - all figures are stored in `./main_files/figure-html`
  - Python
-
-	 - all python code are stored in `./python_code` directory
-	 	- `python_base.ipynb` stores codes for the core example
-	 	- `python_extend.ipynb` stores codes for the extended example
-	 - all figures are stored in `./python_files`
+	 - all codes are stored in `./Python` directory
+		 - all figures are stored in `/results` subdirectory
  - SAS
- 	 - all SAS code are stored in `./SAS_code` directory
-	 	- `SAS_Intro_to_choroplethMap.sas` stores codes for Section 3
-	 	- `SAS_Covid_Case.sas` stores codes for Section 4
-	 - all figures are stored in `./SAS_document`
+	 - all codes are stored in `./SAS` directory
+		 - all figures are stored in `/results` subdirectory
