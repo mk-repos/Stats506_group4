@@ -406,11 +406,11 @@ We can easily draw state boundaries recorded as multi polygons in the `geometry`
 
 ```{python, python.reticulate=FALSE, eval=FALSE}
 sf_us.plot()
-plt.savefig('./python_files/whole_map_python.png')
+plt.savefig('./Python/results/whole_map_python.png')
 plt.show()
 ```
 
-![***Figure: View of the raw shapefile at the state level provided by the Census Bureau***](./python_files/whole_map_python.png)
+![***Figure: View of the raw shapefile at the state level provided by the Census Bureau***](./Python/results/whole_map_python.png)
 
 The Census Bureau’s shapefiles also include coordinates for Alaska, Hawaii, or other distant territories, so they are not displayed at the scale we desire. The easiest solution is to drop the rows that contain these off-mainland states and territories.
 
@@ -423,11 +423,11 @@ dropstates = ["Alaska",
               "Commonwealth of the Northern Mariana Islands",
               "American Samoa"]
 sf_us.query('NAME not in @dropstates').plot()
-plt.savefig('./python_files/dropped_map_python.png')
+plt.savefig('./Python/results/dropped_map_python.png')
 plt.show()
 ```
 
-![***Figure: U.S. map after off-mainland states and territories dropped***](./python_files/dropped_map_python.png)
+![***Figure: U.S. map after off-mainland states and territories dropped***](./Python/results/dropped_map_python.png)
 
 However, we want to include Alaska and Hawaii because our purpose is to make a state-by-state comparison. Thus, as in the R example, we shrink and shift Alaska and Hawaii to be displayed closer to the mainland.
 
@@ -487,22 +487,22 @@ ax1.axis('off')
 sf_us_shifted.to_crs("+proj=aea +lat_1=25 +lat_2=50 +lon_0=-100").plot(ax=ax2)
 ax2.set_title("Equal Area Projection")
 ax2.axis('off')
-plt.savefig('./python_files/transformed_map_python.png')
+plt.savefig('./Python/results/transformed_map_python.png')
 plt.show()
 ```
 
-![***Figure: U.S. map after shifting/scaling Alaska and Hawaii, using two different projection CRS***](./python_files/transformed_map_python.png)
+![***Figure: U.S. map after shifting/scaling Alaska and Hawaii, using two different projection CRS***](./Python/results/transformed_map_python.png)
 
 The final map we will use in the later sections is the one with Alaska and Hawaii, projected by Mercator CRS.
 
 ```{python, python.reticulate=FALSE, eval=FALSE}
 sf_us_shifted.to_crs("+proj=merc").plot(color="white", edgecolor='black')
 plt.axis('off')
-plt.savefig('./python_files/final_map_python.png')
+plt.savefig('./Python/results/final_map_python.png')
 plt.show()
 ```
 
-![***Figure: The resulting U.S. map we use for the following examples***](./python_files/final_map_python.png)
+![***Figure: The resulting U.S. map we use for the following examples***](./Python/results/final_map_python.png)
 
 ### SAS{-}
 
@@ -534,7 +534,7 @@ proc gmap
 run;
 ```
 
-![***Figure:US cholopleth map***](SAS_document/uscholoplethmap.png)
+![***Figure:US cholopleth map***](./SAS/results/uscholoplethmap.png)
 
 ***
 
@@ -558,7 +558,7 @@ proc gmap
 run;
 ```
 
-![***Figure:Michigan map***](SAS_document/Michigan.png)
+![***Figure:Michigan map***](./SAS/results/Michigan.png)
 
 
 # Prepare Count Data to Display
@@ -701,7 +701,7 @@ sf_merge=sf_merge.iloc[:,[4,5,9,10,11,12,13]]
 sf_merge.head()
 ```
 
-![***Table:first 5 observations of Quarterly Data***](python_files/sf_merge.png)
+![***Table:first 5 observations of Quarterly Data***](./Python/results/sf_merge.png)
 
 ### SAS{-}
 
@@ -738,7 +738,7 @@ positiveIncrease = positiveIncrease;
 
 To correct showing the value for each states, we need to match the keys values in the shape files. 
 
-![**shapefile first row**](SAS_document/shapefile_firstfewrow.png)
+![**shapefile first row**](./SAS/results/shapefile_firstfewrow.png)
 
 For example, since we want to show the number of positive cases for each state, thus we want the shape file to show under state level. There are two variables related with `state name` in shape file. One is STUSPS which is abbreviation of the state name and the other is Name.
 
@@ -772,7 +772,7 @@ run;
 
 The final value data you got should have distinct records which the key variables you matched with shapefile should be the primary keys for your value data. And your final value data should look like:
 
-![***Table:first 10 observations of Value Data***](SAS_document/wide_case_data.png)
+![***Table:first 10 observations of Value Data***](./SAS/results/wide_case_data.png)
 
 
 # Generate Choropleth Maps
@@ -905,7 +905,7 @@ def draw_map_quarter(sf_obj, target_q,maxlim):
     plt.gca().yaxis.set_major_locator(plt.NullLocator())
     plt.axis('off')
     name=str(target_q[0:4])+"Q"+str(target_q[-1])+'.png'
-    plt.savefig("./python_files/{}".format(name))
+    plt.savefig("./Python/results/{}".format(name))
     plt.show()
     return
 ```
@@ -916,7 +916,7 @@ def draw_map_quarter(sf_obj, target_q,maxlim):
 draw_map_quarter(sf_merge, "2020.1",max_positive)
 ```
 
-![***Figure: Total count of COVID-19 positives in each state, first quarter of 2020***](./python_files/2020Q1.png)
+![***Figure: Total count of COVID-19 positives in each state, first quarter of 2020***](./Python/results/2020Q1.png)
 
 
 #### Second Quarter{-}
@@ -925,7 +925,7 @@ draw_map_quarter(sf_merge, "2020.1",max_positive)
 draw_map_quarter(sf_merge, "2020.2",max_positive)
 ```
 
-![***Figure: Total count of COVID-19 positives in each state, second quarter of 2020***](./python_files/2020Q2.png)
+![***Figure: Total count of COVID-19 positives in each state, second quarter of 2020***](./Python/results/2020Q2.png)
 
 #### Third Quarter{-}
 
@@ -933,7 +933,7 @@ draw_map_quarter(sf_merge, "2020.2",max_positive)
 draw_map_quarter(sf_merge, "2020.3",max_positive)
 ```
 
-![***Figure: Total count of COVID-19 positives in each state, third quarter of 2020***](./python_files/2020Q3.png)
+![***Figure: Total count of COVID-19 positives in each state, third quarter of 2020***](./Python/results/2020Q3.png)
 
 #### Fourth Quarter{-}
 
@@ -941,7 +941,7 @@ draw_map_quarter(sf_merge, "2020.3",max_positive)
 draw_map_quarter(sf_merge, "2020.4",max_positive)
 ```
 
-![***Figure: Total count of COVID-19 positives in each state, fourth quarter of 2020***](./python_files/2020Q4.png)
+![***Figure: Total count of COVID-19 positives in each state, fourth quarter of 2020***](./Python/results/2020Q4.png)
 
 
 ### SAS {.tabset .tabset-pills}
@@ -959,7 +959,7 @@ proc gmap
 run;
 ```
 
-![***Figure: Total count of COVID-19 positives in each state, first quarter of 2020***](SAS_document/Q1.png)
+![***Figure: Total count of COVID-19 positives in each state, first quarter of 2020***](./SAS/results/Q1.png)
 
 
 #### Second Quarter{-}
@@ -973,7 +973,7 @@ proc gmap
 run;
 ```
 
-![***Figure: Total count of COVID-19 positives in each state, second quarter of 2020***](SAS_document/Q2.png)
+![***Figure: Total count of COVID-19 positives in each state, second quarter of 2020***](./SAS/results/Q2.png)
 
 #### Third Quarter{-}
 
@@ -986,7 +986,7 @@ proc gmap
 run;
 ```
 
-![***Figure: Total count of COVID-19 positives in each state, third quarter of 2020***](SAS_document/Q3.png)
+![***Figure: Total count of COVID-19 positives in each state, third quarter of 2020***](./SAS/results/Q3.png)
 
 
 #### Fourth Quarter{-}
@@ -1000,7 +1000,7 @@ proc gmap
 run;
 ```
 
-![***Figure: Total count of COVID-19 positives in each state, fourth quarter of 2020***](SAS_document/Q4.png)
+![***Figure: Total count of COVID-19 positives in each state, fourth quarter of 2020***](./SAS/results/Q4.png)
 
 
 # Extended Example: Interactive Choropleth Maps
@@ -1174,7 +1174,7 @@ sf_merge_m = sf_merge_m.iloc[:, [10, 4, 5, 9, -1]]
 sf_merge_m.head()
 ```
 
-![***Table:first 5 observations of Monthly Data***](python_files/sf_merge_m.png)
+![***Table:first 5 observations of Monthly Data***](./Python/results/sf_merge_m.png)
 
 Because changing the range of longitude from -180-180 to 0-360 is not compatible with python package "plotly.express", we will use original longitude. And change the location of Alaska and Hawaii. All state are stored in variable 'sf_us_shifted2', which is our map data.
 
@@ -1243,11 +1243,11 @@ fig.update_layout( title_text = 'USA Monthly COVID-19 Cases',
                                             showcoastlines = False))
 
 # save as html  
-fig.write_html('./python_files/Month_case.html', config=config)
+fig.write_html('./Python/results/Month_case.html', config=config)
 ```
 
 ```{r, echo=FALSE, cache=TRUE}
-htmltools::includeHTML("./python_files/Month_case.html")
+htmltools::includeHTML("./Python/results/Month_case.html")
 ```
 
 ***Figure: Interactive choropleth map of total count of COVID-19 positives per month in each state***
