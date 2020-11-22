@@ -575,7 +575,7 @@ For more information on this dataset, including definitions of variable names, s
 
 ### R{-}
 
-```{r aggregate_packages_R, message=FALSE}
+```{r aggregate_packages_R, message=FALSE, warning=FALSE}
 # Same as the previous sections
 library(tidyverse)
 # New in this section
@@ -781,7 +781,7 @@ The final value data you got should have distinct records which the key variable
 
 ### R{-}
 
-```{r graphics_packages_R, message=FALSE}
+```{r graphics_packages_R, message=FALSE, warning=FALSE}
 # Same as the previous sections
 library(sf); library(tidyverse); library(ggplot2)
 # New in this section
