@@ -22,11 +22,9 @@ The following lists show unfinished tasks.
 ## Introductions (Sections 1-2) and Conclusion (Section 7)
 
  - completed
- - waiting for peer reviews
 
 ## R
  - completed
- - waiting for peer reviews
 
 ## Python
 
