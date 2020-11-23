@@ -221,7 +221,7 @@ Operations such as deleting rows and merging with other data frames are the same
 In the sixth part, if the accuracy of the map data is too high, the interactive map will not be rendered. Therefore, after compressing the folder maps data, put it into the maps_comp folder. And, we will use the compressed map data in Python.
 
 ```{python, python.reticulate=FALSE, eval=FALSE}
-filename = "./maps_comp/cb_2018_us_state_500k.shp"
+filename = "../maps/compiled/cb_2018_us_state_500k.shp"
 sf_us = geopd.read_file(filename)
 ```
 
@@ -406,12 +406,10 @@ We can easily draw state boundaries recorded as multi polygons in the `geometry`
 
 ```{python, python.reticulate=FALSE, eval=FALSE}
 sf_us.plot()
-plt.savefig('./Python/results/whole_map_python.png')
+plt.savefig('../Python/results/whole_map_python.png')
 plt.show()
 ```
-
 ![***Figure: View of the raw shapefile at the state level provided by the Census Bureau***](./Python/results/whole_map_python.png)
-
 The Census Bureau’s shapefiles also include coordinates for Alaska, Hawaii, or other distant territories, so they are not displayed at the scale we desire. The easiest solution is to drop the rows that contain these off-mainland states and territories.
 
 ```{python, python.reticulate=FALSE, eval=FALSE}
@@ -654,7 +652,7 @@ sf_merged %>%
 
 let's read the data we downloaded from the [website]("https://covidtracking.com/data/download/all-states-history.csv"). We have already downloaded the data and stored it into the `covid_fix_date` folder. And we will directly use that for this tutorial. 
 
-Using "pandas" packages, we can easily handle the data.
+Using `pandas` packages, we can easily handle the data.
 
 ```{python, python.reticulate=FALSE, eval=FALSE}
 # read data
@@ -668,7 +666,7 @@ df_covid=df_covid[~df_covid['state'].isin(["AS", "GU", "MP", "PR", "VI"])]
 df_covid["date"]=pd.to_datetime(df_covid["date"])
 ```
 
-We use "groupby" and "resample" function wo get quarter data.Then we rename the data for each quarter.
+We use `groupby` and `resample` function wo get quarter data.Then we rename the data for each quarter.
 
 ```{python, python.reticulate=FALSE, eval=FALSE}
 # Aggregate by State and Quarter
@@ -701,7 +699,7 @@ sf_merge=sf_merge.iloc[:,[4,5,9,10,11,12,13]]
 sf_merge.head()
 ```
 
-![***Table:first 5 observations of Quarterly Data***](./Python/results/sf_merge.png)
+![***Table: first 5 observations of Quarterly Data***](./Python/results/sf_merge.png)
 
 ### SAS{-}
 
@@ -885,7 +883,7 @@ draw_map_quarter(sf_merged, "2020.4", max_positive) +
 ### Python {.tabset .tabset-pills}
 
 In order to display the choropleth maps for each quarter with the exactly same design, we created the following function.
-The 'draw_map_quarter()' has three parameters,"sf_obj" is dataframe that contains all information; "target_q" is the target quarter we want to plot; "maxlim" is the largest positive increasing number among all quarters(Fixing this, we can easily distinguish the size of positive increasing numbers by color changes.
+The `draw_map_quarter()` has three parameters,`sf_obj` is DataFrame that contains all information; `target_q` is the target quarter we want to plot; `maxlim` is the largest positive increasing number among all quarters(Fixing this, we can easily distinguish the size of positive increasing numbers by color changes.
 
 
 ```{python, python.reticulate=FALSE, eval=FALSE}
@@ -1174,9 +1172,9 @@ sf_merge_m = sf_merge_m.iloc[:, [10, 4, 5, 9, -1]]
 sf_merge_m.head()
 ```
 
-![***Table:first 5 observations of Monthly Data***](./Python/results/sf_merge_m.png)
+![***Table: first 5 observations of Monthly Data***](./Python/results/sf_merge_m.png)
 
-Because changing the range of longitude from -180-180 to 0-360 is not compatible with python package "plotly.express", we will use original longitude. And change the location of Alaska and Hawaii. All state are stored in variable 'sf_us_shifted2', which is our map data.
+Because changing the range of longitude from -180-180 to 0-360 is not compatible with python package `plotly.express`, we will use original longitude. And change the location of Alaska and Hawaii. All state are stored in variable `sf_us_shifted2`, which is our map data.
 
 January and February 2020 will not shown on this interactive map because positive cases did not exist in almost all states. So, drop January and February data.
 
@@ -1184,16 +1182,15 @@ January and February 2020 will not shown on this interactive map because positiv
 # prepare shift map for Interactive Choropleth Maps
 
 Alaska2 = sf_us.query('NAME == "Alaska"')
-Alaska_geo2= Alaska2.scale(xfact=0.3, yfact=0.3, origin='centroid'
-                         ).translate(xoff=36, yoff=-38)
-
-
+Alaska_geo2= Alaska2.scale(xfact=0.3, yfact=0.3, origin='centroid')\
+                           .translate(xoff=36, yoff=-38)
 Alaska2 = Alaska2.set_geometry(Alaska_geo2)
 
 Hawaii2 = sf_us.query('NAME == "Hawaii"')
-Hawaii_geo2 = Hawaii2.scale(xfact=0.3, yfact=0.3, origin='centroid'
-                                    ).translate(xoff=53, yoff=5)
+Hawaii_geo2 = Hawaii2.scale(xfact=0.3, yfact=0.3, origin='centroid')\
+                            .translate(xoff=53, yoff=5)
 Hawaii2 = Hawaii2.set_geometry(Hawaii_geo2)
+
 sf_us_shifted2 = geopd.GeoDataFrame(
     pd.concat(
         [sf_us.query('NAME not in @dropstates'),
@@ -1216,6 +1213,7 @@ config = {
     'displayModeBar': False
 }
 
+# plotting
 fig = px.choropleth_mapbox(
     data_frame=sf_merge_m_03_11,
     geojson=sf_us_shifted2,
