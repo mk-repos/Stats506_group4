@@ -190,7 +190,10 @@ In addition to these modules, you will likely need to install `descartes` module
 
 ### SAS{-}
 
-We will use the `gamp` procedure in Map library in this tutorial. Unfortunately, `gamp` procedure is not available for the free university edition. But we can access that procedure by using SAS on [midesktop](https://midesktop.umich.edu/portal/webclient/index.html#/launchitems) through the UM computing service. In this tutorial, we use SAS 9.4. 
+In this tutorial, we will use the `sgplot` procedure to draw the choropleth map. The `SGPLOT` procedure creates one or more plots and overlays them on a single set of axes. You can use the SGPLOT procedure to create statistical graphics such as histograms and regression plots. We will use the `polygen` layer to achieve our goal. 
+
+If you want to learn more about the `sgplot`, you can check the [sgplot](https://documentation.sas.com/?cdcId=pgmsascdc&cdcVersion=9.4_3.5&docsetId=grstatproc&docsetTarget=p1t32i8511t1gfn17sw07yxtazad.htm&locale=en)
+
 
 ## How to Handle Shapefiles {.tabset}
 
@@ -261,7 +264,7 @@ sf_us.head()
 
 ### SAS{-}
 
-To handle shapefiles in SAS, we will use the `MAPIMPORT` function to read the `.shp` file from the zip file we downloaded before. Run the following code in SAS and store the shapefile info into the **USmap** variable.
+To handle shapefiles in SAS, we will use the `MAPIMPORT` function to read the `.shp` file from the zip file we downloaded before. Run the following code in SAS and store the shapefile info into the **USmap** variable. 
 
 ```{r,eval = FALSE}
 PROC MAPIMPORT datafile = "\maps\cb_2018_us_state_500k.shp"
@@ -269,7 +272,7 @@ out = USmap;
 run;
 ```
 
-The SAS will store the data into `DATA` type. And we can treat it as usual `DATA` table. But fortunately, in sas, we don't need any further modification for the shapefile. The only things we need to do is to prepare our value data which will be discussed in following section.
+The SAS will store the data into `DATA` type. And we can treat it as usual `DATA` table. 
 
 
 ## How to Draw a US Map {.tabset}
@@ -504,60 +507,77 @@ plt.show()
 
 ### SAS{-}
 
-We will use the gmap procedure in SAS to draw the choropleth map in SAS.
-
+Before we can correctly draw the choropleth map in SAS, we need to transform the shapefile data. 
 ```{r eval = FALSE}
-proc gmap
-	map = <shape_file>
-	data = <Value Data>;
-	id <id from map>; 
-	choro <value from data>;
+/*record the current order*/
+data US_map;
+	set Usmap;
+	seqno=_n_;  
 run;
+
+/*create polyID variable which give unique id for each polygen*/
+
+proc sql;
+	create table polyID as 
+	select distinct STUSPS, segment 
+	from USmap
+	group by STUSPS, segment;
+
+data polyID;
+	set polyID;
+	polyid=_n_;
+run;
+	
+	
+/*combine the polyid with the original shapefile, sorted based on the 
+	state name and the sequence we just recorded before, and save it*/ 
+	
+proc sql;
+create table USmap as 
+select a.STUSPS, polyid, X, Y, seqno
+from polyID as a right join US_map as b 
+   on a.Segment=b.Segment and a.STUSPS=b.STUSPS 
+order by a.STUSPS, seqno;
 ```
 
-SAS have done most of works for us. The only things we need to do to draw the choropleth map is to prepare the value data which will be discussed in next section. 
+We create another variable `seqno` in the shapefile which will record the current order of observations because order is important when we draw the polygen. When you got messy result like the map shown below, Please check whether your process change the order in the shapefile. 
 
-*** 
+![***Figure:Unordered US cholopleth map***](./SAS/results/unorderUSmap.png)
 
-**Example**: US Map 
-
+After transformation, you can now draw the state boundaries recorded as multi polygen. 
 ```{r eval = FALSE}
-pattern v = e;
-title "US Cholopleth map";
-proc gmap
-	map = USmap
-	data = USmap all;
-	id stusps;
-	choro stusps/ nolengend;
+proc sgplot data=Usmap noautolegend;
+	title 'US Cholopleth';
+	polygon x=X y=Y id=polyid/ fill fillattrs=(transparency=0.75) outline 
+		lineattrs=(color=black)  dataSkin=matte fill name='map';
+	gradlegend 'map';
+	xaxis display=none;
+	yaxis display=none;
 run;
 ```
-
 ![***Figure:US cholopleth map***](./SAS/results/uscholoplethmap.png)
 
-***
+The Census Bureau's shapefiles also include coordinates for Alaska, Hawaii, or other distant territories, so they will not be displayed at the scale we desire, because they are widely scattered across the globe. The easiest solution is to drop the rows that contain these off-mainland states and territories. 
 
-**Example**: US - MIchigan
-
-Of course, we can just show several states we want. The following code will show the outline of the Michigan state.
-
+However, we want to include Alaska and Hawaii because our goal is to make a state-by-state comparison.
 ```{r eval = FALSE}
-Proc SQL;
-  create table USmap_Michigan as 
-  select *
-  from USmap
-where stusps = "MI";
-
-title "US - Michigan Map";
-proc gmap
-	map = Work.USmap_Michigan
-	data = Work.USmap_Michigan;
-	id stusps;
-	choro stusps/ nolegend name = "Michigan";
-run;
+/*One way to delete unnecessary observations*/
+Data Usmap;
+modify USmap;
+if STUSPS = "AS" then remove;
+if STUSPS = "GU" then remove;
+if STUSPS = "MP" then remove;
+if STUSPS = "PR" then remove;
+if STUSPS = "VI" then remove;
 ```
 
-![***Figure:Michigan map***](./SAS/results/Michigan.png)
+For practical purposes, scaled Alaska and Hawaii are typically shown as annotations under southern California. However, shifting in SAS is pretty hard to achieve. Thus, one simple way to solve it is to display alaska separately. 
 
+But in this tutorial, we will just simply use the shifted shape file created by python and R processes to put all states in one map.
+
+The state outline for shifted_shape file is shown below: 
+
+![***Figure:US cholopleth map***](./SAS/results/uscholoplethmapshifted.png)
 
 # Prepare Count Data to Display
 
@@ -734,19 +754,10 @@ state = state;
 positiveIncrease = positiveIncrease;
 ```
 
-To correct showing the value for each states, we need to match the keys values in the shape files. 
-
-![**shapefile first row**](./SAS/results/shapefile_firstfewrow.png)
-
-For example, since we want to show the number of positive cases for each state, thus we want the shape file to show under state level. There are two variables related with `state name` in shape file. One is STUSPS which is abbreviation of the state name and the other is Name.
-
-Based on the data you have, you need to ensure any variable in your value data will match key variables in shape file. 
-
-So, we will group our with three output variables: 
+Now, We will group our data with three return variables: 
 
 - q (quarter)
 - STUSPS
-  + since we got the abbreviated state name in our case data, we want to ensure the state abbreviate variable name will match any key name in shapefile. 
 - summation of positiveIncrease as total positive cases.
 
 ```{r eval = FALSE}
@@ -771,6 +782,61 @@ run;
 The final value data you got should have distinct records which the key variables you matched with shapefile should be the primary keys for your value data. And your final value data should look like:
 
 ![***Table:first 10 observations of Value Data***](./SAS/results/wide_case_data.png)
+
+Now we will right join the covid data with our shape file. Please make sure you sorted your data based on seqid.
+```{r eval = FALSE}
+proc sql;
+create table USmap as 
+select a.STUSPS, polyid, X, Y, Quarter1,Quarter2,Quarter3,Quarter4
+from USmap as a 
+   right join wide_case_data_byq as b
+   on a.STUSPS = b.STUSPS
+order by a.STUSPS, seqno;
+```
+
+To conveniently compare covid cases among quarters, we will set the color camp under same levels. To do that, we will calculate the max covid cases among four quarters. 
+```{r eval = FALSE}
+/*calculate the max case numbers in each quarter*/
+proc sql;
+create table maxmap as 
+select '' as STUSPS,0 as polyid, minX as X, minY as Y,
+	q1 as Quarter1,q2 as Quarter2,q3 as Quarter3,q4 as Quarter4
+from (
+	select '', '',min(X) as minX,min(Y) as minY,
+		max(Quarter4) as q4, max(Quarter3) as q3,
+		max(Quarter2) as q2, max(Quarter1) as q1
+	from polyID as a right join US_map as b 
+	   on a.Segment=b.Segment and a.STUSPS=b.STUSPS 
+	   right join wide_case_data_byq as c 
+	   on a.STUSPS = c.STUSPS
+);
+
+
+/*calculate the max case number among four quarter and 
+set each quarter to that number*/
+Data maxmap; 
+set maxmap;
+max = quarter1;
+if quarter2 > max then max = quarter2;
+if quarter3 > max then max = quarter3;
+if quarter4 > max then max = quarter4;
+quarter1 = max;
+quarter2 = max;
+quarter3 = max;
+quarter4 = max;
+drop max;
+
+/*append the row which record the max number to the USmap data we just prepare,
+please make sure the table structures are the same. Or error may incur*/ 
+  
+proc append base=USmap data=maxmap;
+run;
+```
+
+And finally, the USmap data will looks like this: 
+
+![***Table:last 10 observations of USmap Data***](./SAS/results/USmap_last10.png)
+
 
 
 # Generate Choropleth Maps
@@ -944,16 +1010,19 @@ draw_map_quarter(sf_merge, "2020.4",max_positive)
 
 ### SAS {.tabset .tabset-pills}
 
-Now, we have everything we need to draw choropleth map. And the results are shown below including code to access it. But as you can see from the below results, the colormap for each choropleth map is the same which is hard for us to compare across the quarters. In the extended example, we gonna show how to set up the color attributes for our choropleth map so we can compare across the quarter.
+Now, we have everything we need to draw choropleth map. And the results are shown below including code to access it. From the code below you can set up the color model you would like to use. And there is another features for sgplot polygen features. If you want to explore more, you can check the documentation for [polygen](https://documentation.sas.com/?cdcId=pgmsascdc&cdcVersion=9.4_3.5&docsetId=grstatproc&docsetTarget=n1ikfvfs49mhjrn1gmc94y9ilr2l.htm&locale=en)
 
 #### First Quarter{-}
 
 ```{r eval = FALSE}
-proc gmap
-	map = Usmap
-	data = wide_case_data_byq all;
-	id STUSPS;
-	choro quarter1;
+proc sgplot data=Usmap noautolegend;
+	title 'Covid - 19 Positive Number by State: Quarter 1';
+	polygon x=X y=Y id=polyID/ fill fillattrs=(transparency=0.75) outline lineattrs=(color=black) 
+	    colorresponse=Quarter1 dataSkin=matte fill 
+	    colormodel=(white greenyellow green blue purple red black) name='map';
+	    gradlegend 'map';
+	xaxis display=none;
+	yaxis display=none;
 run;
 ```
 
@@ -963,11 +1032,15 @@ run;
 #### Second Quarter{-}
 
 ```{r eval = FALSE}
-proc gmap
-	map = Usmap
-	data = wide_case_data_byq all;
-	id STUSPS;
-	choro quarter2;
+proc sgplot data=Usmap noautolegend;
+	title 'Covid - 19 Positive Number by State: Quarter 2';
+	polygon x=X y=Y id=polyID/ fill fillattrs=(transparency=0.75) outline 
+		lineattrs=(color=black) 
+	    colorresponse=Quarter2 dataSkin=matte fill colormodel=(white greenyellow green blue purple
+		 red black) name='map';
+	gradlegend 'map';
+	xaxis display=none;
+	yaxis display=none;
 run;
 ```
 
@@ -976,11 +1049,15 @@ run;
 #### Third Quarter{-}
 
 ```{r eval = FALSE}
-proc gmap
-	map = Usmap
-	data = wide_case_data_byq all;
-	id STUSPS;
-	choro quarter3;
+proc sgplot data=Usmap noautolegend;
+	title 'Covid - 19 Positive Number by State: Quarter 3';
+	polygon x=X y=Y id=polyID/ fill fillattrs=(transparency=0.75) outline 
+		lineattrs=(color=black) 
+	    colorresponse=Quarter3 dataSkin=matte fill colormodel=(white greenyellow green blue purple
+		 red black) name='map';
+	gradlegend 'map';
+	xaxis display=none;
+	yaxis display=none;
 run;
 ```
 
@@ -990,11 +1067,15 @@ run;
 #### Fourth Quarter{-}
 
 ```{r eval = FALSE}
-proc gmap
-	map = Usmap
-	data = wide_case_data_byq all;
-	id STUSPS;
-	choro quarter4;
+proc sgplot data=Usmap noautolegend;
+	title 'Covid - 19 Positive Number by State: Quarter 4';
+	polygon x=X y=Y id=polyID/ fill fillattrs=(transparency=0.75) outline 
+		lineattrs=(color=black) 
+	    colorresponse=Quarter4 dataSkin=matte fill colormodel=(white greenyellow green blue purple
+		 red black) name='map';
+	gradlegend 'map';
+	xaxis display=none;
+	yaxis display=none;
 run;
 ```
 
@@ -1249,6 +1330,43 @@ htmltools::includeHTML("./Python/results/Month_case.html")
 ```
 
 ***Figure: Interactive choropleth map of total count of COVID-19 positives per month in each state***
+
+# Extended Example: Using `GMAP` procedure to draw the choropleth map
+
+Using the sgplot to draw the choropleth map is complicated. Luckily, the map library provides a more convenient way to draw the choropleth map. 
+
+In the extended example, we will use the `gamp` procedure in Map library to redo the examples. Unfortunately, `gamp` procedure is not available for the free university edition. But we can access that procedure by using SAS on [midesktop](https://midesktop.umich.edu/portal/webclient/index.html#/launchitems) through the UM computing service. In this tutorial, we use SAS 9.4. 
+
+*** 
+
+**Example**: US Map 
+
+```{r eval = FALSE}
+pattern v = e;
+title "US Cholopleth map";
+proc gmap
+	map = USmap
+	data = USmap all;
+	id stusps;
+	choro stusps/ nolengend;
+run;
+```
+
+To correct showing the value for each states, we need to match the keys values in the shape files. 
+
+![**shapefile first row**](./SAS/results/shapefile_firstfewrow.png)
+
+For example, since we want to show the number of positive cases for each state, thus we want the shape file to show under state level. There are two variables related with `state name` in shape file. One is STUSPS which is abbreviation of the state name and the other is Name.
+
+Based on the data you have, you need to ensure any variable in your value data will match key variables in shape file. 
+
+We will group our data with three output variables: 
+
+- q (quarter)
+- STUSPS
+  + since we got the abbreviated state name in our case data, we want to ensure the state abbreviate variable name will match any key name in shapefile. 
+- summation of positiveIncrease as total positive cases.
+
 
 # Conclusion
 
