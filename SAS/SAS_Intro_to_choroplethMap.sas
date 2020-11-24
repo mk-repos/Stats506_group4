@@ -1,10 +1,10 @@
-PROC MAPIMPORT datafile = "C:\Users\zhaoleo\GitHub_Folder\Stats506_group4\maps\cb_2018_us_state_500k.shp"
+PROC MAPIMPORT datafile = "/home/u50241292/cb_2018_us_state_500k.shp"
 out = USmap;
 run;
 /*
 empty cholopleth map without data
 */
-FILENAME plots "C:\Users\zhaoleo\GitHub_Folder\Stats506_group4\SAS_document\";
+FILENAME plots "/home/u50241292/";
 goptions reset=all DEVICE=png ftitle="Arial/bo" GSFNAME=plots GSFMODE=REPLACE NOFILEONLY  Replace;
 ods _all_ close;
 ods listing;
@@ -19,12 +19,44 @@ run;
 ods listing close;
 quit;
 
+data US_map;
+	set Usmap;
+	seqno=_n_;
+run;
+
+proc sql;
+	create table polyID as 
+	select distinct STUSPS, segment 
+	from USmap
+	group by STUSPS, segment;
+
+data polyID;
+	set polyID;
+	polyid=_n_;
+run;
+
+proc sql;
+create table USmap as 
+select a.STUSPS, polyid, X, Y
+from polyID as a right join US_map as b 
+   on a.Segment=b.Segment and a.STUSPS=b.STUSPS 
+order by a.STUSPS, seqno;
+
+proc sgplot data=Usmap noautolegend;
+	title 'US Cholopleth using original shape file';
+	polygon x=X y=Y id=polyid/ fill fillattrs=(transparency=0.75) outline 
+		lineattrs=(color=black)  dataSkin=matte fill name='map';
+	gradlegend 'map';
+	xaxis display=none;
+	yaxis display=none;
+run;
+
 
 /*
 first few rows of shape file
 */
 options printerpath=(png out);
-filename out 'c:\Users\zhaoleo\GitHub_Folder\Stats506_group4\SAS_document\shapefile_firstfewrow.png';
+filename out '/home/u50241292/shapefile_firstfewrow.png';
 ods listing close;
 ods printer;
 proc print data = USmap (OBS = 1);
@@ -53,3 +85,14 @@ proc gmap
 	choro stusps/ nolegend name = "Michigan";
 run;
 ods listing close;
+
+
+
+proc sgplot data=Usmap(Where = (STUSPS = "MI")) noautolegend;
+	title 'US - Michigan Map';
+	polygon x=X y=Y id=polyid/ fill fillattrs=(transparency=0.75) outline 
+		lineattrs=(color=black)  dataSkin=matte fill name='map';
+	gradlegend 'map';
+	xaxis display=none;
+	yaxis display=none;
+run;
