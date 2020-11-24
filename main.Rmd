@@ -838,7 +838,6 @@ And finally, the USmap data will looks like this:
 ![***Table:last 10 observations of USmap Data***](./SAS/results/USmap_last10.png)
 
 
-
 # Generate Choropleth Maps
 
 ## Software Requirements {.tabset}
@@ -1335,20 +1334,70 @@ htmltools::includeHTML("./Python/results/Month_case.html")
 
 Using the sgplot to draw the choropleth map is complicated. Luckily, the map library provides a more convenient way to draw the choropleth map. 
 
-In the extended example, we will use the `gamp` procedure in Map library to redo the examples. Unfortunately, `gamp` procedure is not available for the free university edition. But we can access that procedure by using SAS on [midesktop](https://midesktop.umich.edu/portal/webclient/index.html#/launchitems) through the UM computing service. In this tutorial, we use SAS 9.4. 
+In the extended example, we will use the `gmap` procedure in Map library to redo the examples. Unfortunately, `gmap` procedure is not available for the free university edition. But we can access that procedure by using SAS on [midesktop](https://midesktop.umich.edu/portal/webclient/index.html#/launchitems) through the UM computing service or [SAS on academic](https://odamid-usw2.oda.sas.com) In this tutorial, we use SAS on academic. 
 
-*** 
+## How to Draw a US Map 
 
-**Example**: US Map 
+To draw the choropleth map, we need two datasets. 
 
+- shapefile. 
+  + We can directly import the shapefile by using `proc mapimport` procedure. There is no other change we need to do for the shapefile. 
+- Covid count number:
+  + We will discuss it in next section.
+
+
+We can draw the related choropleth map by using following code structure. 
 ```{r eval = FALSE}
-pattern v = e;
-title "US Cholopleth map";
 proc gmap
-	map = USmap
-	data = USmap all;
-	id stusps;
-	choro stusps/ nolengend;
+	map = {shapefile}
+	data = {value dataset};
+	id {stusps} ; /*key variable*/
+	choro {value}/ nolengend;
+run;
+```
+
+## Prepare Count Data 
+```{r eval = FALSE}
+/*import the sas data*/
+proc import datafile="/home/u50241292/20201111-all-states-history.csv" 
+		out=UScovidRawData;
+run;
+
+/*select the columns we want and filter the data*/
+proc SQL;
+create table df_covid as 
+select date, state, positiveIncrease 
+from UScovidRawData 
+where state not in ("AS", "GU", "MP", "PR", "VI");
+
+/*modified the data, create quarter variable*/
+DATA df_state_q;
+	set df_covid;
+
+	if input(date, YYMMDD10.) >=input("2020/10/01", YYMMDD10.) then
+		q="4";
+	else if input(date, YYMMDD10.)>=input("2020/07/01", YYMMDD10.) then
+		q="3";
+	else if input(date, YYMMDD10.) >=input("2020/04/01", YYMMDD10.) then
+		q="2";
+	else if input(date, YYMMDD10.) >=input("2020/01/01", YYMMDD10.) then
+		q="1";
+	state=state;
+	positiveIncrease=positiveIncrease;
+
+/*calculate the positive cases for each quarter*/
+Proc sql;
+	create table case_data_byq as 
+	select q, state as STUSPS, 
+		sum(positiveIncrease) as total_pos 
+	from df_state_q group by q, state order by state, q;
+
+/*get wider dataset*/
+proc transpose data=case_data_byq out=wide_case_data_byq 
+prefix=quarter;
+	by STUSPS;
+	id q;
+	var total_pos;
 run;
 ```
 
@@ -1366,6 +1415,68 @@ We will group our data with three output variables:
 - STUSPS
   + since we got the abbreviated state name in our case data, we want to ensure the state abbreviate variable name will match any key name in shapefile. 
 - summation of positiveIncrease as total positive cases.
+
+
+## Show Choropleth Maps for each quarter in 2020 {.tabset}
+
+### First Quarter{-}
+
+```{r eval = FALSE}
+title "US - Quarter1";
+proc gmap
+	map = USmap
+	data = wide_case_data_byq ;
+	id stusps;
+	choro quarter1/levels = 10;
+run;
+```
+![**Gmap - ExampleQ1**](./SAS/results/gmapq1.png)
+
+### Second Quarter{-}
+
+```{r eval = FALSE}
+title "US - Quarter2";
+proc gmap
+	map = USmap
+	data = wide_case_data_byq ;
+	id stusps;
+	choro quarter2/levels = 10;
+run;
+```
+![**Gmap - ExampleQ2**](./SAS/results/gmapq2.png)
+
+### Third Quarter{-}
+
+```{r eval = FALSE}
+title "US - Quarter3";
+proc gmap
+	map = USmap
+	data = wide_case_data_byq ;
+	id stusps;
+	choro quarter3/levels = 10;
+run;
+```
+
+![**Gmap - ExampleQ3**](./SAS/results/gmapq3.png)
+
+### Fourth Quarter{-}
+
+```{r eval = FALSE}
+title "US - Quarter4";
+proc gmap
+	map = USmap
+	data = wide_case_data_byq ;
+	id stusps;
+	choro quarter4/levels = 10;
+run;
+```
+
+![**Gmap - ExampleQ4**](./SAS/results/gmapq4.png)
+
+## Reference 
+
+To learn more about the attributes for `gmap` procedure, you can check the following [link](https://documentation.sas.com/?cdcId=pgmsascdc&cdcVersion=9.4_3.5&docsetId=grmapref&docsetTarget=n1rfysveimrpeon1gw5c8grv4hgs.htm&locale=en) 
+
 
 
 # Conclusion
