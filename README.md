@@ -33,8 +33,7 @@ The following lists show unfinished tasks.
 
 ## SAS
 
- - Procedure to make the shifted map in SAS 
- - extended example: owner defined color choropleth map
+ - completed
  - Waiting for peer reviews
 
 # Collaboration History
