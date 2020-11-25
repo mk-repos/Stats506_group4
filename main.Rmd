@@ -1327,7 +1327,7 @@ htmltools::includeHTML("./Python/results/Month_case.html")
 
 ***Figure: Interactive choropleth map of total count of COVID-19 positives per month in each state***
 
-# Extended Example: Using `GMAP` procedure to draw the choropleth map
+# Extended Example: Using `GMAP` procedure to draw the choropleth map in SAS
 
 Using the sgplot to draw the choropleth map is complicated. Luckily, the map library provides a more convenient way to draw the choropleth map. 
 
@@ -1486,7 +1486,7 @@ SAS was also able to reproduce the core example of reading a shapefile and displ
 
 This is a natural difference considering that Python and R are more like comprehensive programming languages, whereas SAS is primarily for data analysis.
 
-This difference may become a reason to prioritize R and Python in some situations. For example, in countries with many remote islands, it is often not possible to display the entire country without major modifications to existing coordinates. In such cases, R and Python would be preferable for flexibility and generalizability. However, SAS would also suffice to analyze countries and regions where shapefiles that are already optimized for display are available, like the United States. In fact, SAS has a built-in map of the United States.
+This difference may become a reason to prioritize R and Python in some situations. For example, in countries with many remote islands, it is often not possible to display the entire country without major modifications to existing coordinates. In such cases, R and Python would be preferable for flexibility and generalizability. However, SAS would also suffice to analyze countries and regions where shapefiles that are already optimized for display are available, like the United States. In fact, SAS has a built-in map of the United States, which is shown in the Section 7.
 
 Another major difference is that R and Python can create interactive reports using HTML, CSS, and Javascript. Our extended examples showed interactive maps in R and Python and successfully visualized the temporal trends in the number of COVID-19 infections. Spatial data can often provide insights when observed in conjunction with trends over time. In our extended example, we could clearly observe which areas were experiencing peak COVID-19 outbreaks at which time of year. Spatio-temporal visualizations have a wide range of applications, including weather, traffic accidents, and crime rates over regions and time.
 
