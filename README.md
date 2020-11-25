@@ -15,27 +15,6 @@ In this tutorial, we explained how to handle shapefiles (geographic data format)
 
 Because the file size of `main.html` is too large to preview on Github, **we recommend reviewers to clone this entire repository**.
 
-# To-Do List
-
-The following lists show unfinished tasks.
-
-## Introductions (Sections 1-2) and Conclusion (Section 7)
-
- - completed
-
-## R
- - completed
-
-## Python
-
- - completed 
- - waiting for peer reviews
-
-## SAS
-
- - completed
- - Waiting for peer reviews
-
 # Collaboration History
 
  - Code reviews are mostly done through `Issue` on Github.
