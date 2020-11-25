@@ -29,7 +29,7 @@ order by a.STUSPS, seqno;
 /*Unorder case*/
 proc sgplot data=Usmap noautolegend;
 	title 'US Cholopleth(Unordered)';
-	polygon x=X y=Y id=STUSPS/ fill fillattrs=(transparency=0.75) outline 
+	polygon x=X y=Y id=STUSPS/ fill outline 
 		lineattrs=(color=black)  dataSkin=matte fill name='map';
 	gradlegend 'map';
 	xaxis display=none;
@@ -40,7 +40,7 @@ run;
 
 proc sgplot data=Usmap noautolegend;
 	title 'US Cholopleth';
-	polygon x=X y=Y id=polyid/ fill fillattrs=(transparency=0.75) outline 
+	polygon x=X y=Y id=polyid/ fill outline 
 		lineattrs=(color=black)  dataSkin=matte fill name='map';
 	gradlegend 'map';
 	xaxis display=none;
@@ -111,7 +111,7 @@ if STUSPS = "VI" then remove;
 
 proc sgplot data=Usmap noautolegend;
 	title 'US Cholopleth using shifted shape file';
-	polygon x=X y=Y id=polyid/ fill fillattrs=(transparency=0.75) outline 
+	polygon x=X y=Y id=polyid/ fill outline 
 		lineattrs=(color=black)  dataSkin=matte fill name='map';
 	gradlegend 'map';
 	xaxis display=none;

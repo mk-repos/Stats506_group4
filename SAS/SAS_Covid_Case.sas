@@ -140,10 +140,9 @@ ods listing;
 
 proc sgplot data=USmap  noautolegend;
 	title 'Covid - 19 Positive Number by State: Quarter 1';
-	polygon x=X y=Y id=polyID/ fill fillattrs=(transparency=0.75) outline 
+	polygon x=X y=Y id=polyID/ fill outline 
 		lineattrs=(color=black) 
-	    colorresponse=Quarter1 dataSkin=matte fill colormodel=(white greenyellow green blue purple
-		 red black) name='map';
+	    colorresponse=Quarter1 dataSkin=matte fill colormodel=(white red str) name='map';
 	gradlegend 'map';
 	xaxis display=none;
 	yaxis display=none;
@@ -151,10 +150,9 @@ run;
 
 proc sgplot data=Usmap noautolegend;
 	title 'Covid - 19 Positive Number by State: Quarter 2';
-	polygon x=X y=Y id=polyID/ fill fillattrs=(transparency=0.75) outline 
+	polygon x=X y=Y id=polyID/ fill outline 
 		lineattrs=(color=black) 
-	    colorresponse=Quarter2 dataSkin=matte fill colormodel=(white greenyellow green blue purple
-		 red black) name='map';
+	    colorresponse=Quarter2 dataSkin=matte fill colormodel=(white red str) name='map';
 	gradlegend 'map';
 	xaxis display=none;
 	yaxis display=none;
@@ -162,10 +160,9 @@ run;
 
 proc sgplot data=Usmap noautolegend;
 	title 'Covid - 19 Positive Number by State: Quarter 3';
-	polygon x=X y=Y id=polyID/ fill fillattrs=(transparency=0.75) outline 
+	polygon x=X y=Y id=polyID/ fill outline 
 		lineattrs=(color=black) 
-	    colorresponse=Quarter3 dataSkin=matte fill colormodel=(white greenyellow green blue purple
-		 red black) name='map';
+	    colorresponse=Quarter3 dataSkin=matte fill colormodel=(white red str) name='map';
 	gradlegend 'map';
 	xaxis display=none;
 	yaxis display=none;
@@ -173,10 +170,9 @@ run;
 
 proc sgplot data=Usmap noautolegend;
 	title 'Covid - 19 Positive Number by State: Quarter 4';
-	polygon x=X y=Y id=polyID/ fill fillattrs=(transparency=0.75) outline 
+	polygon x=X y=Y id=polyID/ fill outline 
 		lineattrs=(color=black) 
-	    colorresponse=Quarter4 dataSkin=matte fill colormodel=(white greenyellow green blue purple
-		 red black) name='map';
+	    colorresponse=Quarter4 dataSkin=matte fill colormodel=(white red str) name='map';
 	gradlegend 'map';
 	xaxis display=none;
 	yaxis display=none;
